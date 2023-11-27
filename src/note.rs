@@ -11,3 +11,8 @@ pub struct Note {
     content: String,
     created_at: DateTime<Utc>
 }
+
+/*
+TODO: move adding/deleting notes from app.rs to here?
+TODO: create NoteList(?) struct for adding/deleting notes
+*/
