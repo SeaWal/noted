@@ -9,6 +9,7 @@ pub struct AppState {
     pub current_view: usize,
 }
 
+// TODO: move note vec impl to note.rs
 impl AppState {
     
     // construct new AppState
@@ -35,7 +36,7 @@ impl AppState {
     pub fn delete_note(&mut self, note: Note) {
 
     }
-    
+
     // quit out app
     pub fn quit(&mut self) {
         self.should_quit = true
