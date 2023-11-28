@@ -1,4 +1,4 @@
-use crossterm::event::{self, Event as CrossTermEvent, KeyEvent, MouseEvent};
+use crossterm::event::{KeyEvent, MouseEvent};
 
 #[derive(Debug, Clone, Copy)]
 pub enum EventType {
