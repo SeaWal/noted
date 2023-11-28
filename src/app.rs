@@ -1,5 +1,5 @@
 
-use note::Note;
+use crate::note::Note;
 
 #[derive(Debug, Default)]
 pub struct AppState {
