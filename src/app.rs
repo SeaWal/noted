@@ -28,12 +28,12 @@ impl AppState {
     }
 
     // add new note to list
-    pub fn insert_note(&mut self, note: Note) {
+    pub fn insert_note(&mut self, _note: Note) {
 
     }
 
     // delete a note
-    pub fn delete_note(&mut self, note: Note) {
+    pub fn delete_note(&mut self, _note: Note) {
 
     }
 
