@@ -1,5 +1,7 @@
+use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::fs::File;
 
 // TODO: make this configurable from app.rs
 pub const DB_PATH: &str = "./notes/notes.json";
@@ -84,6 +86,12 @@ impl NoteList {
         } else {
             None
         }
+    }
+
+    pub fn save(&self, file_path: &str) -> Result<()> {
+        let file = File::create(file_path)?;
+        let _ = serde_json::to_writer_pretty(file, self)?;
+        Ok(())
     }
 }
 
