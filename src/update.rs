@@ -1,4 +1,4 @@
-use crossterm::event::{KeyCode, KeyEvent};
+use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
 use crate::app::AppState;
 
@@ -7,12 +7,21 @@ use crate::app::AppState;
 // TODO: make part of AppState impementation?
 pub fn update(app: &mut AppState, key_event: KeyEvent) {
     match key_event.code {
-        // close the progrem
-        KeyCode::Esc | KeyCode::Char('q')=> {},
+        // close the program
+        KeyCode::Esc | KeyCode::Char('q')=> {
+            app.quit()
+        }
+
+        KeyCode::Char('c') | KeyCode::Char('C') => {
+            if key_event.modifiers == KeyModifiers::CONTROL {
+                app.quit()
+            }
+        }
+        
         // on home screen, create/open a new note
-        KeyCode::Char('n') => {},
+        KeyCode::Char('n') => {}
         // if highlighting a note, open the editor
-        KeyCode::Enter => {},
+        KeyCode::Enter => {}
         // if editing a note, save it
         KeyCode::Char('s') => {}
         // navigate up/down list of notes
