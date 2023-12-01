@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 
 // TODO: make this configurable from app.rs
 pub const DB_PATH: &str = "./notes/notes.json";
@@ -9,11 +9,10 @@ pub struct Note {
     id: usize,
     title: String,
     content: String,
-    created_at: DateTime<Utc>
+    created_at: DateTime<Utc>,
 }
 
 impl Note {
-
     pub fn new() -> Self {
         Note {
             id: 0,
@@ -30,11 +29,8 @@ pub struct NoteList {
 }
 
 impl NoteList {
-
     pub fn new() -> Self {
-        NoteList {
-            notes: Vec::new()
-        }
+        NoteList { notes: Vec::new() }
     }
 
     pub fn insert(&mut self, note: &Note) {
@@ -42,11 +38,9 @@ impl NoteList {
     }
 
     pub fn remove(&mut self, id: usize) -> Option<Note> {
-        if let Some(index) = self.notes.iter().position(
-            |note| note.id == id) {
-                Some(self.notes.remove(index))
-            }
-        else {
+        if let Some(index) = self.notes.iter().position(|note| note.id == id) {
+            Some(self.notes.remove(index))
+        } else {
             None
         }
     }
@@ -57,6 +51,14 @@ impl NoteList {
 
     pub fn length(&self) -> usize {
         self.notes.len()
+    }
+
+    pub fn max_note_id(&self) -> Option<usize> {
+        if let Some(max_id) = self.notes.iter().map(|note| note.id).max() {
+            Some(max_id)
+        } else {
+            None
+        }
     }
 }
 
@@ -87,7 +89,6 @@ mod tests {
         note_list.remove(note.id);
 
         assert_eq!(note_list.length(), 0)
-
     }
 
     #[test]
