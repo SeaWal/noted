@@ -13,13 +13,30 @@ pub struct Note {
 }
 
 impl Note {
-    pub fn new() -> Self {
+    pub fn new(id: usize, title: &str, content: &str) -> Self {
         Note {
-            id: 0,
-            title: "".into(),
-            content: "".into(),
+            id,
+            title: String::from(title),
+            content: String::from(content),
             created_at: Utc::now(),
         }
+    }
+
+    pub fn set_id(&mut self, id: usize) {
+        self.id = id
+    }
+
+    pub fn set_title(&mut self, title: &str) {
+        self.title = String::from(title)
+    }
+
+    pub fn set_content(&mut self, content: &str) {
+        self.content = String::from(content)
+    }
+
+    pub fn update(&mut self, title: &str, content: &str) {
+        self.set_title(title);
+        self.set_content(content);
     }
 }
 
@@ -34,7 +51,15 @@ impl NoteList {
     }
 
     pub fn insert(&mut self, note: &Note) {
-        self.notes.push(note.clone());
+        let note_id = match self.max_note_id() {
+            Some(note_id) => note_id + 1,
+            None => 1,
+        };
+
+        let mut note = note.clone();
+        note.set_id(note_id);
+
+        self.notes.push(note);
     }
 
     pub fn remove(&mut self, id: usize) -> Option<Note> {
@@ -70,7 +95,7 @@ mod tests {
     #[test]
     fn test_note_inserted() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new());
+        note_list.insert(&Note::new(0, "", ""));
 
         assert_eq!(note_list.length(), 1);
     }
@@ -93,13 +118,27 @@ mod tests {
 
     #[test]
     fn test_notelist_length() {
-        let note1 = Note::new();
-        let note2 = Note::new();
+        let note1 = Note::new(0, "", "");
+        let note2 = Note::new(1, "", "");
 
         let mut note_list = NoteList::new();
         note_list.insert(&note1);
         note_list.insert(&note2);
 
         assert_eq!(note_list.length(), 2);
+    }
+
+    #[test]
+    fn test_max_note_id() {
+        let mut note_list = NoteList::new();
+
+        let note1 = Note::new(0, "", "");
+        let note2 = Note::new(0, "", "");
+        note_list.insert(&note1);
+        note_list.insert(&note2);
+
+        let max_id = note_list.max_note_id().unwrap();
+
+        assert_eq!(max_id, 2);
     }
 }
