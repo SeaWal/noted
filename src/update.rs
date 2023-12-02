@@ -1,34 +1,44 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::app::AppState;
+use crate::app::{AppState, CurrentView};
 
-// TODO: remove comments after implementing
-// TODO: move this to app.rs 
-// TODO: make part of AppState impementation?
 pub fn update(app: &mut AppState, key_event: KeyEvent) {
-    match key_event.code {
-        // close the program
-        KeyCode::Esc | KeyCode::Char('q')=> {
-            app.quit()
-        }
+    match app.current_view {
+        CurrentView::Main => {
+            match key_event.code {
+                // close the program
+                KeyCode::Esc | KeyCode::Char('q') => app.quit(),
 
-        KeyCode::Char('c') | KeyCode::Char('C') => {
-            if key_event.modifiers == KeyModifiers::CONTROL {
-                app.quit()
+                KeyCode::Char('c') | KeyCode::Char('C') => {
+                    if key_event.modifiers == KeyModifiers::CONTROL {
+                        app.quit()
+                    }
+                }
+                // on home screen, create/open a note
+                KeyCode::Char('n') | KeyCode::Enter => app.current_view = CurrentView::Editing,
+
+                // navigate up/down list of notes
+                KeyCode::Up => {
+                    if app.current_note == 0 {
+                        app.current_note = 0
+                    } else {
+                        app.current_note -= 1
+                    }
+                }
+                KeyCode::Down => {
+                    if app.current_note == app.notes.max_note_id().unwrap() {
+                        app.current_note = app.current_note
+                    } else {
+                        app.current_note += 1
+                    }
+                }
+
+                // default case
+                _ => {}
             }
         }
-        
-        // on home screen, create/open a new note
-        KeyCode::Char('n') => {}
-        // if highlighting a note, open the editor
-        KeyCode::Enter => {}
-        // if editing a note, save it
-        KeyCode::Char('s') => {}
-        // navigate up/down list of notes
-        KeyCode::Up => {}
-        KeyCode::Down => {}
-
-        // default case
-        _ => {}
+        CurrentView::Editing => match key_event.code {
+            _ => {}
+        },
     }
 }
