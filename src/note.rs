@@ -1,7 +1,7 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fs::File;
+use std::fs::{self, File};
 
 // TODO: make this configurable from app.rs
 pub const DB_PATH: &str = "./notes/notes.json";
@@ -93,6 +93,12 @@ impl NoteList {
         let _ = serde_json::to_writer_pretty(file, self)?;
         Ok(())
     }
+
+    pub fn load(file_path: &str) -> Result<NoteList> {
+        let file_content = fs::read_to_string(file_path)?;
+        let note_list = serde_json::from_str(&file_content)?;
+        Ok(note_list)
+    }
 }
 
 #[cfg(test)]
@@ -148,5 +154,18 @@ mod tests {
         let max_id = note_list.max_note_id().unwrap();
 
         assert_eq!(max_id, 2);
+    }
+
+    #[test]
+    fn test_load_notes_from_json() {
+        let test_file = "test.json";
+        let json_content = r#"{ "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-01T15:30:45" }"#;
+        let _ = fs::write(&test_file, json_content).expect("Failed to write test file.");
+
+        let result = NoteList::load(test_file);
+        assert!(result.is_ok());
+
+        let note_list = result.unwrap();
+        assert_eq!(note_list.length(), 2);
     }
 }
