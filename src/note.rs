@@ -1,10 +1,13 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
+use std::{
+    fs::{self, File},
+    path::Path,
+};
 
 // TODO: make this configurable from app.rs
-pub const DB_PATH: &str = "./notes/notes.json";
+pub const DB_PATH: &str = "../notes/notes.json";
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Note {
@@ -95,7 +98,8 @@ impl NoteList {
     }
 
     pub fn load(file_path: &str) -> Result<NoteList> {
-        let file_content = fs::read_to_string(file_path)?;
+        let path = Path::new(file_path);
+        let file_content = fs::read_to_string(path)?;
         let note_list = serde_json::from_str(&file_content)?;
         Ok(note_list)
     }
