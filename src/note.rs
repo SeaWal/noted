@@ -1,10 +1,7 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::{
-    fs::{self, File},
-    path::Path,
-};
+use std::fs::{self, File};
 
 // TODO: make this configurable from app.rs
 pub const DB_PATH: &str = "../notes/notes.json";
@@ -98,9 +95,9 @@ impl NoteList {
     }
 
     pub fn load(file_path: &str) -> Result<NoteList> {
-        let path = Path::new(file_path);
-        let file_content = fs::read_to_string(path)?;
-        let note_list = serde_json::from_str(&file_content)?;
+        let file_content = fs::read_to_string(file_path)?;
+        let notes: Vec<Note> = serde_json::from_str(&file_content)?;
+        let note_list = NoteList { notes };
         Ok(note_list)
     }
 }
@@ -161,9 +158,12 @@ mod tests {
     }
 
     #[test]
-    fn test_load_notes_from_json() {
+    fn test_load_notelist_from_json() {
         let test_file = "test.json";
-        let json_content = r#"{ "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-01T15:30:45" }"#;
+        let json_content = r#"[
+            { "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 12:30:31.389545 UTC" },
+            { "id": 1, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 13:30:31.389545 UTC" }
+            ]"#;
         let _ = fs::write(&test_file, json_content).expect("Failed to write test file.");
 
         let result = NoteList::load(test_file);
