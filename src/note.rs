@@ -1,17 +1,28 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use std::fs::{self, File};
+use serde_json::Value;
+use std::{
+    fmt::{self, Display, Formatter},
+    fs::{self, File},
+    io::Read,
+};
 
 // TODO: make this configurable from app.rs
 pub const DB_PATH: &str = "../notes/notes.json";
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Note {
     id: usize,
     title: String,
     content: String,
     created_at: DateTime<Utc>,
+}
+
+impl Display for Note {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{} {}", self.id, self.title)
+    }
 }
 
 impl Note {
@@ -42,7 +53,7 @@ impl Note {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct NoteList {
     notes: Vec<Note>,
 }
@@ -94,10 +105,20 @@ impl NoteList {
         Ok(())
     }
 
-    pub fn load(file_path: &str) -> Result<NoteList> {
-        let file_content = fs::read_to_string(file_path)?;
-        let notes: Vec<Note> = serde_json::from_str(&file_content)?;
-        let note_list = NoteList { notes };
+    pub fn load(file_path: &str) -> Result<Self> {
+        // let file_content = fs::read_to_string(file_path)?;
+        // let notes: Vec<Note> = serde_json::from_str(&file_content)?;
+        // let note_list = NoteList { notes };
+        // Ok(note_list)
+        let mut file = File::open(&file_path)?;
+        let mut json_string = String::new();
+        let _ = file.read_to_string(&mut json_string)?;
+        let note_list = NoteList {
+            notes: serde_json::from_str(&json_string)?,
+        };
+        for note in &note_list.notes {
+            println!("{}", note);
+        }
         Ok(note_list)
     }
 }
@@ -160,16 +181,37 @@ mod tests {
     #[test]
     fn test_load_notelist_from_json() {
         let test_file = "test.json";
-        let json_content = r#"[
-            { "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 12:30:31.389545 UTC" },
-            { "id": 1, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 13:30:31.389545 UTC" }
-            ]"#;
-        let _ = fs::write(&test_file, json_content).expect("Failed to write test file.");
+        // let json_content = r#"[
+        //     { "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 12:30:31.389545 UTC" },
+        //     { "id": 1, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 13:30:31.389545 UTC" }
+        //     ]"#;
+        // let _ = fs::write(&test_file, json_content).expect("Failed to write test file.");
+
+        let mut nl = NoteList::new();
+        nl.insert(&Note::new(0, "title", "content1"));
+        nl.insert(&Note::new(1, "title2", "content2"));
+        let file = File::create(test_file).unwrap();
+        let _ = serde_json::to_writer_pretty(file, &nl);
 
         let result = NoteList::load(test_file);
         assert!(result.is_ok());
 
         let note_list = result.unwrap();
         assert_eq!(note_list.length(), 2);
+    }
+
+    #[test]
+    fn test_write_notelist_to_json() {
+        let mut note_list = NoteList::new();
+        note_list.insert(&Note::new(0, "note1", "content1"));
+        note_list.insert(&Note::new(1, "note2", "content2"));
+
+        let file_path = "test_write.json";
+        let result = note_list.save(file_path);
+        assert!(result.is_ok());
+
+        let parsed = NoteList::load(file_path);
+        assert!(parsed.is_ok());
+        // assert_eq!(note_list, parsed);
     }
 }
