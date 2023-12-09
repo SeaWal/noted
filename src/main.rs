@@ -5,13 +5,12 @@ pub mod tui;
 pub mod ui;
 pub mod update;
 
-use std::{fs::{self, File}, io::Read};
-
 use anyhow::Result;
 use app::AppState;
 use event::{EventHandler, EventType};
-use note::{Note, NoteList};
+
 use ratatui::{backend::CrosstermBackend, Terminal};
+
 use tui::Tui;
 use update::update;
 
@@ -37,13 +36,5 @@ fn main() -> Result<()> {
 
     tui.exit()?;
 
-    // let _ = NoteList::load("/Users/sean/Projects/rust/noted/test_write.json");
-    let mut file = File::open("/Users/sean/Projects/rust/noted/test_write.json")?;
-    let mut json = String::new();
-    let _ = file.read_to_string(&mut json)?;
-    let notes: Vec<Note> = serde_json::from_str(&json)?;
-    for note in &notes {
-        println!("{}", note);
-    }
     Ok(())
 }

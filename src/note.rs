@@ -1,10 +1,9 @@
 use anyhow::Result;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::{
     fmt::{self, Display, Formatter},
-    fs::{self, File},
+    fs::File,
     io::Read,
 };
 
@@ -106,20 +105,17 @@ impl NoteList {
     }
 
     pub fn load(file_path: &str) -> Result<Self> {
-        // let file_content = fs::read_to_string(file_path)?;
-        // let notes: Vec<Note> = serde_json::from_str(&file_content)?;
-        // let note_list = NoteList { notes };
-        // Ok(note_list)
         let mut file = File::open(&file_path)?;
         let mut json_string = String::new();
         let _ = file.read_to_string(&mut json_string)?;
-        let note_list = NoteList {
-            notes: serde_json::from_str(&json_string)?,
-        };
-        for note in &note_list.notes {
+        let note_list: NoteList = serde_json::from_str(&json_string)?;
+        Ok(note_list)
+    }
+
+    pub fn print_notes(&self) {
+        for note in &self.notes {
             println!("{}", note);
         }
-        Ok(note_list)
     }
 }
 
@@ -181,14 +177,8 @@ mod tests {
     #[test]
     fn test_load_notelist_from_json() {
         let test_file = "test.json";
-        // let json_content = r#"[
-        //     { "id": 0, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 12:30:31.389545 UTC" },
-        //     { "id": 1, "title" : "sample", "content" : "sample", "created_at" : "2023-12-08 13:30:31.389545 UTC" }
-        //     ]"#;
-        // let _ = fs::write(&test_file, json_content).expect("Failed to write test file.");
-
         let mut nl = NoteList::new();
-        nl.insert(&Note::new(0, "title", "content1"));
+        nl.insert(&Note::new(0, "title1", "content1"));
         nl.insert(&Note::new(1, "title2", "content2"));
         let file = File::create(test_file).unwrap();
         let _ = serde_json::to_writer_pretty(file, &nl);
@@ -203,15 +193,16 @@ mod tests {
     #[test]
     fn test_write_notelist_to_json() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new(0, "note1", "content1"));
-        note_list.insert(&Note::new(1, "note2", "content2"));
+        note_list.insert(&Note::new(0, "title1", "content1"));
+        note_list.insert(&Note::new(1, "title2", "content2"));
 
-        let file_path = "test_write.json";
+        let file_path = "test.json";
         let result = note_list.save(file_path);
         assert!(result.is_ok());
 
-        let parsed = NoteList::load(file_path);
-        assert!(parsed.is_ok());
-        // assert_eq!(note_list, parsed);
+        let parsed_result = NoteList::load(file_path);
+        assert!(parsed_result.is_ok());
+        let parsed_nl = parsed_result.unwrap();
+        assert_eq!(note_list, parsed_nl);
     }
 }
