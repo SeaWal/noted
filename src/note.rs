@@ -117,6 +117,10 @@ impl NoteList {
             println!("{}", note);
         }
     }
+
+    pub fn iter(&self) -> impl Iterator<Item = &Note> {
+        self.notes.iter()
+    }
 }
 
 #[cfg(test)]
