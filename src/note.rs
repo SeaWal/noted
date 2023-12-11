@@ -12,10 +12,10 @@ pub const DB_PATH: &str = "../notes/notes.json";
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Note {
-    id: usize,
-    title: String,
-    content: String,
-    created_at: DateTime<Utc>,
+    pub id: usize,
+    pub title: String,
+    pub content: String,
+    pub created_at: DateTime<Utc>,
 }
 
 impl Display for Note {
