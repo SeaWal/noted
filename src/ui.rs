@@ -1,8 +1,8 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Style};
-use ratatui::text::{Span, Text, Line};
-use ratatui::widgets::{Block, BorderType, Borders, Paragraph};
+use ratatui::text::{Line, Span, Text};
+use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph};
 
 use crate::app::{AppState, CurrentView};
 
@@ -21,7 +21,18 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         .style(Style::default());
 
     let title = Paragraph::new(Text::styled("Noted", Style::default())).block(title_block);
-    frame.render_widget(title, layout[1]);
+    frame.render_widget(title, layout[0]);
+
+    let mut list_items = Vec::<ListItem>::new();
+    for note in app.notes.iter() {
+        list_items.push(ListItem::new(Line::from(Span::styled(
+            format!("{: <25} Hello", note.id),
+            Style::default().fg(Color::Green),
+        ))))
+    }
+
+    let list = List::new(list_items);
+    frame.render_widget(list, layout[1]);
 
     let nav_hints = {
         match app.current_view {
