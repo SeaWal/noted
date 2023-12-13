@@ -2,9 +2,10 @@ use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Style};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, BorderType, Borders, List, ListItem, Paragraph};
+use ratatui::widgets::{Block, BorderType, Borders, Cell, List, ListItem, Paragraph, Row, Table};
 
 use crate::app::{AppState, CurrentView};
+use crate::note::{self, NoteList};
 
 pub fn render(app: &mut AppState, frame: &mut Frame) {
     let layout = Layout::default()
@@ -26,7 +27,7 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
     let mut list_items = Vec::<ListItem>::new();
     for note in app.notes.iter() {
         list_items.push(ListItem::new(Line::from(Span::styled(
-            format!("{: <25} Hello", note.id),
+            format!("{: <10} Hello", note.id.to_string()),
             Style::default().fg(Color::Green),
         ))))
     }
@@ -62,4 +63,26 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         ),
         CurrentView::Editing => {}
     }
+}
+
+fn render_notes<'a>(note_list: &mut NoteList) -> Table<'a> {
+    let notes = Block::default()
+        .borders(Borders::ALL)
+        .style(Style::default().fg(Color::White))
+        .border_type(BorderType::Plain);
+
+    let details: Vec<_> = note_list
+        .iter()
+        .map(|note| {
+            Row::new(vec![
+                Cell::from(Span::raw(note.id.into())),
+                Cell::from(Span::raw(note.title)),
+                Cell::from(Span::raw(note.created_at.into())),
+            ])
+        })
+        .collect();
+
+    let table = Table::new(details);
+
+    table
 }
