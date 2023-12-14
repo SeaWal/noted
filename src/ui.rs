@@ -2,7 +2,7 @@ use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span, Text};
-use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table};
+use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState};
 
 use crate::app::{AppState, CurrentView};
 use crate::note::NoteList;
@@ -13,20 +13,20 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         .constraints([
             Constraint::Length(1),
             Constraint::Min(1),
-            Constraint::Length(3),
+            Constraint::Length(2),
         ])
         .split(frame.size());
 
+    let mut idx = TableState::default();
+    idx.select(Some(app.current_note));
     let list = render_notes(&mut app.notes);
-    frame.render_widget(list, layout[1]);
+    frame.render_stateful_widget(list, layout[1], &mut idx);
 
     let nav_hints = {
         match app.current_view {
             CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => {
-                Span::styled("((q/Esc) to quit", Style::default())
-            }
+            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
         }
     };
 
@@ -76,6 +76,7 @@ fn render_notes(note_list: &mut NoteList) -> Table<'_> {
                 .style(Style::default())
                 .border_type(BorderType::Plain),
         )
+        .highlight_style(Style::default().bg(Color::White).fg(Color::Black))
         .widths(&[
             Constraint::Percentage(10),
             Constraint::Percentage(40),
