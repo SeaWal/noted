@@ -36,15 +36,7 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         }
         CurrentView::Editing => {}
     }
-    let nav_hints = {
-        match app.current_view {
-            CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
-        }
-    };
-
-    frame.render_widget(Paragraph::new(Line::from(nav_hints)), layout[1]);
     let nav_hints = {
         match app.current_view {
             CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
