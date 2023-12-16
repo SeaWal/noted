@@ -121,6 +121,11 @@ impl NoteList {
     pub fn iter(&self) -> impl Iterator<Item = &Note> {
         self.notes.iter()
     }
+
+    pub fn get(&self, id: usize) -> Option<&Note> {
+        self.notes.iter().find(|&note| note.id == id)
+    }
+
 }
 
 #[cfg(test)]
