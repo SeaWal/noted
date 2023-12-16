@@ -10,18 +10,32 @@ use crate::note::NoteList;
 pub fn render(app: &mut AppState, frame: &mut Frame) {
     let layout = Layout::default()
         .direction(ratatui::layout::Direction::Vertical)
-        .constraints([
-            Constraint::Length(1),
-            Constraint::Min(1),
-            Constraint::Length(2),
-        ])
+        .constraints([Constraint::Min(1), Constraint::Length(2)])
         .split(frame.size());
 
-    let mut idx = TableState::default();
-    idx.select(Some(app.current_note));
-    let list = render_notes(&mut app.notes);
-    frame.render_stateful_widget(list, layout[1], &mut idx);
+    frame.render_widget(
+        Paragraph::new("")
+            .block(
+                Block::default()
+                    .title("Noted")
+                    .title_alignment(Alignment::Center)
+                    .borders(Borders::ALL)
+                    .border_type(BorderType::Rounded),
+            )
+            .style(Style::default())
+            .alignment(Alignment::Center),
+        frame.size(),
+    );
 
+    match app.current_view {
+        CurrentView::Main => {
+            let mut idx = TableState::default();
+            idx.select(Some(app.current_note));
+            let list = render_notes(&mut app.notes);
+            frame.render_stateful_widget(list, layout[0], &mut idx);
+        }
+        CurrentView::Editing => {}
+    }
     let nav_hints = {
         match app.current_view {
             CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
@@ -30,24 +44,16 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         }
     };
 
-    frame.render_widget(Paragraph::new(Line::from(nav_hints)), layout[2]);
+    frame.render_widget(Paragraph::new(Line::from(nav_hints)), layout[1]);
+    let nav_hints = {
+        match app.current_view {
+            CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
 
-    match app.current_view {
-        CurrentView::Main => frame.render_widget(
-            Paragraph::new("")
-                .block(
-                    Block::default()
-                        .title("Noted")
-                        .title_alignment(Alignment::Center)
-                        .borders(Borders::ALL)
-                        .border_type(BorderType::Rounded),
-                )
-                .style(Style::default())
-                .alignment(Alignment::Center),
-            frame.size(),
-        ),
-        CurrentView::Editing => {}
-    }
+            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
+        }
+    };
+
+    frame.render_widget(Paragraph::new(Line::from(nav_hints)), layout[1]);
 }
 
 fn render_notes(note_list: &mut NoteList) -> Table<'_> {
