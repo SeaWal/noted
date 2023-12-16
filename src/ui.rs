@@ -1,7 +1,7 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span, Text};
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState};
 
 use crate::app::{AppState, CurrentView};
@@ -12,6 +12,23 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         .direction(ratatui::layout::Direction::Vertical)
         .constraints([Constraint::Min(1), Constraint::Length(2)])
         .split(frame.size());
+
+    match app.current_view {
+        CurrentView::Main => {
+            let mut idx = TableState::default();
+            idx.select(Some(app.current_note));
+            let list = render_notes(&mut app.notes);
+            frame.render_stateful_widget(list, layout[0], &mut idx);
+        }
+        CurrentView::Editing => {
+            let pg = Paragraph::new(app.input_text.clone())
+                .block(Block::default().title("Editor").borders(Borders::ALL));
+            frame.render_widget(pg, layout[0]);
+        }
+    }
+
+    let nav_hints = render_nav(app);
+    frame.render_widget(nav_hints, layout[1]);
 
     frame.render_widget(
         Paragraph::new("")
@@ -26,26 +43,6 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             .alignment(Alignment::Center),
         frame.size(),
     );
-
-    match app.current_view {
-        CurrentView::Main => {
-            let mut idx = TableState::default();
-            idx.select(Some(app.current_note));
-            let list = render_notes(&mut app.notes);
-            frame.render_stateful_widget(list, layout[0], &mut idx);
-        }
-        CurrentView::Editing => {}
-    }
-
-    let nav_hints = {
-        match app.current_view {
-            CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
-
-            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
-        }
-    };
-
-    frame.render_widget(Paragraph::new(Line::from(nav_hints)), layout[1]);
 }
 
 fn render_notes(note_list: &mut NoteList) -> Table<'_> {
@@ -82,4 +79,16 @@ fn render_notes(note_list: &mut NoteList) -> Table<'_> {
         ]);
 
     table
+}
+
+fn render_nav(app: &mut AppState) -> Paragraph<'_> {
+    let nav_hints = {
+        match app.current_view {
+            CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
+
+            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
+        }
+    };
+
+    Paragraph::new(Line::from(nav_hints))
 }

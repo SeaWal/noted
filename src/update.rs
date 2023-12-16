@@ -46,9 +46,18 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 if key_event.modifiers == KeyModifiers::CONTROL {
-                    
+
                 }
             }
+
+            KeyCode::Char(value) => {
+                app.input_text.push(value);
+            }
+
+            KeyCode::Backspace => {
+                let _ = app.input_text.pop();
+            }
+            
             _ => {}
         },
     }
