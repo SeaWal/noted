@@ -11,6 +11,7 @@ pub struct AppState {
     pub notes: NoteList,
     pub current_note: usize,
     pub current_view: CurrentView,
+    pub input_text: String,
 }
 
 impl AppState {
@@ -21,6 +22,7 @@ impl AppState {
             notes: NoteList::new(),
             current_note: 0,
             current_view: CurrentView::Main,
+            input_text: String::new(),
         }
     }
 
