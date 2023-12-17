@@ -50,9 +50,13 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
         }
         CurrentView::Editing => match key_event.code {
-            KeyCode::Esc | KeyCode::Char('q') => app.quit(),
+            KeyCode::Esc | KeyCode::Char('q') => {
+                app.save();
+                app.quit()
+            }
             KeyCode::Char('c') | KeyCode::Char('C') => {
                 if key_event.modifiers == KeyModifiers::CONTROL {
+                    app.save();
                     app.quit()
                 }
             }
