@@ -1,6 +1,9 @@
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 
-use crate::app::{AppState, CurrentView};
+use crate::{
+    app::{AppState, CurrentView},
+    note::Note,
+};
 
 pub fn update(app: &mut AppState, key_event: KeyEvent) {
     match app.current_view {
@@ -15,7 +18,16 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                     }
                 }
                 // on home screen, create/open a note
-                KeyCode::Char('n') | KeyCode::Enter => app.current_view = CurrentView::Editing,
+                KeyCode::Char('n') => {
+                    let new_id = app.notes.max_note_id().unwrap() + 1;
+                    let note = Note::new(new_id, "", "");
+                    app.current_note = new_id;
+                    app.notes.insert(&note);
+
+                    app.current_view = CurrentView::Editing
+                }
+
+                KeyCode::Enter => app.current_view = CurrentView::Editing,
 
                 // navigate up/down list of notes
                 KeyCode::Up => {
@@ -46,7 +58,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
             KeyCode::Char('s') | KeyCode::Char('S') => {
                 if key_event.modifiers == KeyModifiers::CONTROL {
-
+                    app.set_current_note()
                 }
             }
 
@@ -57,7 +69,9 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             KeyCode::Backspace => {
                 let _ = app.input_text.pop();
             }
-            
+
+            KeyCode::Enter => app.input_text.push('\n'),
+
             _ => {}
         },
     }

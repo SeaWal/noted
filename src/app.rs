@@ -1,4 +1,5 @@
 use crate::note::{Note, NoteList};
+use anyhow::Result;
 
 #[derive(Debug)]
 pub enum CurrentView {
@@ -12,6 +13,7 @@ pub struct AppState {
     pub current_note: usize,
     pub current_view: CurrentView,
     pub input_text: String,
+    pub save_file: String,
 }
 
 impl AppState {
@@ -23,6 +25,7 @@ impl AppState {
             current_note: 0,
             current_view: CurrentView::Main,
             input_text: String::new(),
+            save_file: String::new(),
         }
     }
 
@@ -41,5 +44,16 @@ impl AppState {
     // quit out app
     pub fn quit(&mut self) {
         self.should_quit = true
+    }
+
+    pub fn save(&self) -> Result<()> {
+        self.notes.save(self.save_file.as_str())
+    }
+
+    pub fn set_current_note(&mut self) {
+        match self.notes.get(self.current_note) {
+            Some(note) => note.set_content(&self.input_text),
+            None => {}
+        }
     }
 }
