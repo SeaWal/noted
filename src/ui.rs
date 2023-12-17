@@ -2,7 +2,7 @@ use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState};
+use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
 
 use crate::app::{AppState, CurrentView};
 use crate::note::NoteList;
@@ -22,7 +22,8 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         }
         CurrentView::Editing => {
             let pg = Paragraph::new(app.input_text.clone())
-                .block(Block::default().title("Editor").borders(Borders::ALL));
+                .block(Block::default().title("Editor").borders(Borders::ALL))
+                .wrap(Wrap { trim: false });
             frame.render_widget(pg, layout[0]);
         }
     }
