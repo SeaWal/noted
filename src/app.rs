@@ -25,7 +25,7 @@ impl AppState {
             current_note: 0,
             current_view: CurrentView::Main,
             input_text: String::new(),
-            save_file: String::new(),
+            save_file: String::from("./notes/test.json"),
         }
     }
 
