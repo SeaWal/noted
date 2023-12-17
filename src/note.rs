@@ -122,8 +122,8 @@ impl NoteList {
         self.notes.iter()
     }
 
-    pub fn get(&self, id: usize) -> Option<&Note> {
-        self.notes.iter().find(|&note| note.id == id)
+    pub fn get(&mut self, id: usize) -> Option<&mut Note> {
+        self.notes.iter_mut().find(|note| note.id == id)
     }
 
 }
