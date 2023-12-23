@@ -50,9 +50,10 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
 fn render_notes(note_list: &mut NoteList) -> Table<'_> {
     let rows: Vec<Row> = note_list
         .iter()
-        .map(|note| {
+        .enumerate()
+        .map(|(id, note)| {
             Row::new(vec![
-                Cell::from(Span::from(note.id.to_string())),
+                Cell::from(Span::from(id.to_string())),
                 Cell::from(Span::from(note.title.clone())),
                 Cell::from(Span::from(note.created_at.to_string())),
             ])
