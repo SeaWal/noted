@@ -57,12 +57,15 @@ impl NoteList {
     }
 
     pub fn insert(&mut self, note: &Note) {
-        let mut note = note.clone();
-        self.notes.push(note);
+        self.notes.push(note.clone());
     }
 
-    pub fn remove(&mut self, id: usize) {
-
+    pub fn remove(&mut self, id: usize) -> Option<Note> {
+        if id < self.notes.len() {
+            Some(self.notes.remove(id))
+        } else {
+            None
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -100,7 +103,6 @@ impl NoteList {
     pub fn get(&mut self, id: usize) -> Option<&mut Note> {
         self.notes.get_mut(id)
     }
-
 }
 
 #[cfg(test)]
@@ -126,7 +128,7 @@ mod tests {
 
         let mut note_list = NoteList::new();
         note_list.insert(&note);
-
+        note_list.remove(0);
         assert_eq!(note_list.length(), 0)
     }
 
