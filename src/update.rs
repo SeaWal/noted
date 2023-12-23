@@ -36,8 +36,10 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                     }
                 }
                 KeyCode::Down => {
-                    if app.current_note >= app.notes.length() {}
-                    else { app.current_note += 1 }
+                    if app.current_note == app.notes.length() - 1 {
+                    } else {
+                        app.current_note += 1
+                    }
                 }
 
                 // default case
