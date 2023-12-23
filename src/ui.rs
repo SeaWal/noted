@@ -21,7 +21,8 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            let pg = Paragraph::new(app.input_text.clone())
+            let text = app.input_text.clone();
+            let pg = Paragraph::new(text)
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
             frame.render_widget(pg, layout[0]);
