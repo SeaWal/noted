@@ -12,7 +12,6 @@ pub const DB_PATH: &str = "../notes/notes.json";
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Note {
-    pub id: usize,
     pub title: String,
     pub content: String,
     pub created_at: DateTime<Utc>,
@@ -20,22 +19,17 @@ pub struct Note {
 
 impl Display for Note {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "{} {}", self.id, self.title)
+        write!(f, "{} {}", self.title, self.created_at)
     }
 }
 
 impl Note {
-    pub fn new(id: usize, title: &str, content: &str) -> Self {
+    pub fn new(title: &str, content: &str) -> Self {
         Note {
-            id,
             title: String::from(title),
             content: String::from(content),
             created_at: Utc::now(),
         }
-    }
-
-    pub fn set_id(&mut self, id: usize) {
-        self.id = id
     }
 
     pub fn set_title(&mut self, title: &str) {
@@ -63,23 +57,12 @@ impl NoteList {
     }
 
     pub fn insert(&mut self, note: &Note) {
-        let note_id = match self.max_note_id() {
-            Some(note_id) => note_id + 1,
-            None => 1,
-        };
-
         let mut note = note.clone();
-        note.set_id(note_id);
-
         self.notes.push(note);
     }
 
-    pub fn remove(&mut self, id: usize) -> Option<Note> {
-        if let Some(index) = self.notes.iter().position(|note| note.id == id) {
-            Some(self.notes.remove(index))
-        } else {
-            None
-        }
+    pub fn remove(&mut self, id: usize) {
+
     }
 
     pub fn is_empty(&self) -> bool {
@@ -88,14 +71,6 @@ impl NoteList {
 
     pub fn length(&self) -> usize {
         self.notes.len()
-    }
-
-    pub fn max_note_id(&self) -> Option<usize> {
-        if let Some(max_id) = self.notes.iter().map(|note| note.id).max() {
-            Some(max_id)
-        } else {
-            None
-        }
     }
 
     pub fn save(&self, file_path: &str) -> Result<()> {
@@ -123,7 +98,7 @@ impl NoteList {
     }
 
     pub fn get(&mut self, id: usize) -> Option<&mut Note> {
-        self.notes.iter_mut().find(|note| note.id == id)
+        self.notes.get_mut(id)
     }
 
 }
@@ -136,7 +111,7 @@ mod tests {
     #[test]
     fn test_note_inserted() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new(0, "", ""));
+        note_list.insert(&Note::new("", ""));
 
         assert_eq!(note_list.length(), 1);
     }
@@ -144,7 +119,6 @@ mod tests {
     #[test]
     fn test_note_deleted() {
         let note = Note {
-            id: 1,
             title: "title".into(),
             content: "content".into(),
             created_at: Utc::now(),
@@ -152,15 +126,14 @@ mod tests {
 
         let mut note_list = NoteList::new();
         note_list.insert(&note);
-        note_list.remove(note.id);
 
         assert_eq!(note_list.length(), 0)
     }
 
     #[test]
     fn test_notelist_length() {
-        let note1 = Note::new(0, "", "");
-        let note2 = Note::new(1, "", "");
+        let note1 = Note::new("", "");
+        let note2 = Note::new("", "");
 
         let mut note_list = NoteList::new();
         note_list.insert(&note1);
@@ -170,25 +143,11 @@ mod tests {
     }
 
     #[test]
-    fn test_max_note_id() {
-        let mut note_list = NoteList::new();
-
-        let note1 = Note::new(0, "", "");
-        let note2 = Note::new(0, "", "");
-        note_list.insert(&note1);
-        note_list.insert(&note2);
-
-        let max_id = note_list.max_note_id().unwrap();
-
-        assert_eq!(max_id, 2);
-    }
-
-    #[test]
     fn test_load_notelist_from_json() {
         let test_file = "test.json";
         let mut nl = NoteList::new();
-        nl.insert(&Note::new(0, "title1", "content1"));
-        nl.insert(&Note::new(1, "title2", "content2"));
+        nl.insert(&Note::new("title1", "content1"));
+        nl.insert(&Note::new("title2", "content2"));
         let file = File::create(test_file).unwrap();
         let _ = serde_json::to_writer_pretty(file, &nl);
 
@@ -202,8 +161,8 @@ mod tests {
     #[test]
     fn test_write_notelist_to_json() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new(0, "title1", "content1"));
-        note_list.insert(&Note::new(1, "title2", "content2"));
+        note_list.insert(&Note::new("title1", "content1"));
+        note_list.insert(&Note::new("title2", "content2"));
 
         let file_path = "test.json";
         let result = note_list.save(file_path);
