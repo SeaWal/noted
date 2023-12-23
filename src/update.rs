@@ -19,9 +19,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 }
                 // on home screen, create/open a note
                 KeyCode::Char('n') => {
-                    let new_id = app.notes.max_note_id().unwrap() + 1;
-                    let note = Note::new(new_id, "", "");
-                    app.current_note = new_id;
+                    let note = Note::new("", "");
                     app.notes.insert(&note);
 
                     app.current_view = CurrentView::Editing
@@ -38,11 +36,8 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                     }
                 }
                 KeyCode::Down => {
-                    if app.current_note == app.notes.max_note_id().unwrap() {
-                        app.current_note = app.current_note
-                    } else {
-                        app.current_note += 1
-                    }
+                    if app.current_note >= app.notes.length() {}
+                    else { app.current_note += 1 }
                 }
 
                 // default case
