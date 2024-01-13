@@ -28,7 +28,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 KeyCode::Enter => {
                     app.input_text = match app.notes.get(app.current_note) {
                         Some(note) => note.clone().content,
-                        None => String::new()
+                        None => String::new(),
                     };
                     app.current_view = CurrentView::Editing
                 }
@@ -71,13 +71,19 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
 
             KeyCode::Char(value) => {
                 app.input_text.push(value);
+                app.inc_cursor();
             }
 
             KeyCode::Backspace => {
                 let _ = app.input_text.pop();
+                app.dec_cursor();
             }
 
             KeyCode::Enter => app.input_text.push('\n'),
+
+            KeyCode::Left => app.dec_cursor(),
+
+            KeyCode::Right => app.inc_cursor(),
 
             _ => {}
         },

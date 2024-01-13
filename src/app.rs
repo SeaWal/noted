@@ -27,7 +27,7 @@ impl AppState {
             current_view: CurrentView::Main,
             input_text: String::new(),
             save_file: String::from("./notes/test.json"),
-            cursor_pos: 0
+            cursor_pos: 0,
         }
     }
 
@@ -56,6 +56,18 @@ impl AppState {
         match self.notes.get(self.current_note) {
             Some(note) => note.set_content(&self.input_text),
             None => {}
+        }
+    }
+
+    pub fn inc_cursor(&mut self) {
+        if self.cursor_pos != self.input_text.len() {
+            self.cursor_pos += 1;
+        }
+    }
+
+    pub fn dec_cursor(&mut self) {
+        if self.cursor_pos != 0 {
+            self.cursor_pos -= 1;
         }
     }
 }
