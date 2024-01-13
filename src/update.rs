@@ -25,7 +25,13 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                     app.current_view = CurrentView::Editing
                 }
 
-                KeyCode::Enter => app.current_view = CurrentView::Editing,
+                KeyCode::Enter => {
+                    app.input_text = match app.notes.get(app.current_note) {
+                        Some(note) => note.clone().content,
+                        None => String::new()
+                    };
+                    app.current_view = CurrentView::Editing
+                }
 
                 // navigate up/down list of notes
                 KeyCode::Up => {
@@ -48,12 +54,12 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
         }
         CurrentView::Editing => match key_event.code {
             KeyCode::Esc | KeyCode::Char('q') => {
-                app.save();
+                let _ = app.save();
                 app.quit()
             }
             KeyCode::Char('c') | KeyCode::Char('C') => {
                 if key_event.modifiers == KeyModifiers::CONTROL {
-                    app.save();
+                    let _ = app.save();
                     app.quit()
                 }
             }
