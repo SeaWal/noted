@@ -53,25 +53,24 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
         }
         CurrentView::Editing => match key_event.code {
-            KeyCode::Esc | KeyCode::Char('q') => {
+            KeyCode::Esc => {
                 let _ = app.save();
                 app.quit()
             }
-            KeyCode::Char('c') | KeyCode::Char('C') => {
-                if key_event.modifiers == KeyModifiers::CONTROL {
-                    let _ = app.save();
-                    app.quit()
-                }
-            }
-            KeyCode::Char('s') | KeyCode::Char('S') => {
-                if key_event.modifiers == KeyModifiers::CONTROL {
-                    app.set_current_note()
-                }
-            }
-
             KeyCode::Char(value) => {
-                app.input_text.push(value);
-                app.inc_cursor();
+                if key_event.modifiers == KeyModifiers::CONTROL {
+                    match value {
+                        's' | 'S' => app.set_current_note(),
+                        'c' | 'C' => {
+                            let _ = app.save();
+                            app.quit()
+                        }
+                        _ => {}
+                    }
+                } else {
+                    app.input_text.insert(app.cursor_pos, value);
+                    app.inc_cursor()
+                }
             }
 
             KeyCode::Backspace => {
