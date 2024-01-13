@@ -1,7 +1,7 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span};
+use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
 
 use crate::app::{AppState, CurrentView};
@@ -21,8 +21,7 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            let text = app.input_text.clone();
-            let pg = Paragraph::new(text)
+            let pg = Paragraph::new(Text::raw(&app.input_text))
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
             frame.render_widget(pg, layout[0]);
