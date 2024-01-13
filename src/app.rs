@@ -14,6 +14,7 @@ pub struct AppState {
     pub current_view: CurrentView,
     pub input_text: String,
     pub save_file: String,
+    pub cursor_pos: usize,
 }
 
 impl AppState {
@@ -26,6 +27,7 @@ impl AppState {
             current_view: CurrentView::Main,
             input_text: String::new(),
             save_file: String::from("./notes/test.json"),
+            cursor_pos: 0
         }
     }
 
