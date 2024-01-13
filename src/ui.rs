@@ -88,7 +88,7 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
         match app.current_view {
             CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => Span::styled("((q/Esc) to quit", Style::default()),
+            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
         }
     };
 
