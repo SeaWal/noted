@@ -74,7 +74,8 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
 
             KeyCode::Backspace => {
-                let _ = app.input_text.pop();
+                if app.cursor_pos == 0 { return };
+                let _ = app.input_text.remove(app.cursor_pos);
                 app.dec_cursor();
             }
 
