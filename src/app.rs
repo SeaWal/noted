@@ -60,9 +60,10 @@ impl AppState {
     }
 
     pub fn inc_cursor(&mut self) {
-        if self.cursor_pos != self.input_text.len() {
-            self.cursor_pos += 1;
+        if self.cursor_pos == self.input_text.len() - 1 {
+            return;
         }
+        self.cursor_pos += 1;
     }
 
     pub fn dec_cursor(&mut self) {
