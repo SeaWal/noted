@@ -1,7 +1,7 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span, Text};
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
 
 use crate::app::{AppState, CurrentView};
@@ -25,16 +25,14 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
                 .input_text
                 .chars()
                 .nth(app.cursor_pos)
-                .unwrap()
+                .unwrap_or(' ')
                 .to_string();
 
-            let text = vec![
-                Line::from(vec![
+            let text = vec![Line::from(vec![
                 Span::raw(&app.input_text[0..app.cursor_pos]),
                 Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
-                Span::raw(&app.input_text[app.cursor_pos+1..])
-                ])
-            ];
+                Span::raw(&app.input_text[app.cursor_pos + 1..]),
+            ])];
             let pg = Paragraph::new(text)
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
