@@ -21,7 +21,21 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            let pg = Paragraph::new(Text::raw(&app.input_text))
+            let cursor_char = app
+                .input_text
+                .chars()
+                .nth(app.cursor_pos)
+                .unwrap()
+                .to_string();
+
+            let text = vec![
+                Line::from(vec![
+                Span::raw(&app.input_text[0..app.cursor_pos]),
+                Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
+                Span::raw(&app.input_text[app.cursor_pos+1..])
+                ])
+            ];
+            let pg = Paragraph::new(text)
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
             frame.render_widget(pg, layout[0]);
@@ -88,7 +102,7 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
         match app.current_view {
             CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
+            CurrentView::Editing => Span::styled("((Esc) to quit", Style::default()),
         }
     };
 
