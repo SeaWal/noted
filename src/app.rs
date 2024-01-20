@@ -100,7 +100,7 @@ fn find_prev_newline(input: String, start_index: usize) -> Option<usize> {
     for (index, ch) in input
         .char_indices()
         .rev()
-        .skip_while(|&(i, _)| i >= start_index-1)
+        .skip_while(|&(i, _)| i > start_index-1)
     {
         if ch == '\n' {
             return Some(index-1);
