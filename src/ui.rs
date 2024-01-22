@@ -1,7 +1,7 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span};
+use ratatui::text::{Line, Span, Text};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
 
 use crate::app::{AppState, CurrentView};
@@ -28,11 +28,13 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
                 .unwrap_or(' ')
                 .to_string();
 
-            let text = vec![Line::from(vec![
-                Span::raw(&app.input_text[0..app.cursor_pos]),
-                Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
-                Span::raw(&app.input_text[app.cursor_pos + 1..]),
-            ])];
+            // let text = vec![Line::from(vec![
+            //     Span::raw(&app.input_text[0..app.cursor_pos]),
+            //     Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
+            //     Span::raw(&app.input_text[app.cursor_pos + 1..]),
+            // ])];
+
+            let text = build_note_text(&app.input_text, app.cursor_pos);
             let pg = Paragraph::new(text)
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
@@ -47,7 +49,7 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         Paragraph::new("")
             .block(
                 Block::default()
-                    .title("Noted")
+                    .title(app.cursor_pos.to_string())
                     .title_alignment(Alignment::Center)
                     .borders(Borders::ALL)
                     .border_type(BorderType::Rounded),
@@ -105,4 +107,22 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
     };
 
     Paragraph::new(Line::from(nav_hints))
+}
+
+fn build_note_text(input_text: &str, cursor_pos: usize) -> Vec<Line> {
+    let mut spans: Vec<Span> = Vec::default();
+    for (i, ch) in input_text.chars().enumerate() {
+        if ch == '\n' {
+            spans.push(Span::raw("↵"));
+        } else {
+            let style = if i == cursor_pos{
+                Style::default().fg(Color::White).bg(Color::LightYellow)
+            } else {
+                Style::default().fg(Color::White)
+            };
+            spans.push(Span::styled(ch.to_string(), style));
+        }
+    }
+    
+    vec![Line::from(spans)]
 }
