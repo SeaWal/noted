@@ -1,7 +1,7 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span, Text};
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
 
 use crate::app::{AppState, CurrentView};
@@ -21,20 +21,15 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            let cursor_char = app
-                .input_text
-                .chars()
-                .nth(app.cursor_pos)
-                .unwrap_or(' ')
-                .to_string();
-
             // let text = vec![Line::from(vec![
             //     Span::raw(&app.input_text[0..app.cursor_pos]),
             //     Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
             //     Span::raw(&app.input_text[app.cursor_pos + 1..]),
             // ])];
 
-            let text = build_note_text(&app.input_text, app.cursor_pos);
+            // let text = build_note_text(&app.input_text, app.cursor_pos);
+            let text: Vec<Line<'_>> = build(&app.input_text, app.cursor_pos);
+
             let pg = Paragraph::new(text)
                 .block(Block::default().title("Editor").borders(Borders::ALL))
                 .wrap(Wrap { trim: false });
@@ -109,13 +104,13 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
     Paragraph::new(Line::from(nav_hints))
 }
 
-fn build_note_text(input_text: &str, cursor_pos: usize) -> Vec<Line> {
+fn _build_note_text(input_text: &str, cursor_pos: usize) -> Vec<Line> {
     let mut spans: Vec<Span> = Vec::default();
     for (i, ch) in input_text.chars().enumerate() {
         if ch == '\n' {
             spans.push(Span::raw("↵"));
         } else {
-            let style = if i == cursor_pos{
+            let style = if i == cursor_pos {
                 Style::default().fg(Color::White).bg(Color::LightYellow)
             } else {
                 Style::default().fg(Color::White)
@@ -123,6 +118,33 @@ fn build_note_text(input_text: &str, cursor_pos: usize) -> Vec<Line> {
             spans.push(Span::styled(ch.to_string(), style));
         }
     }
-    
+
     vec![Line::from(spans)]
+}
+
+fn build(input_text: &str, cursor_pos: usize) -> Vec<Line> {
+    let mut lines: Vec<Line> = Vec::new();
+    let input_lines: Vec<&str> = input_text.split('\n').collect();
+
+    let mut offset = 0;
+    for (index, line) in input_lines.iter().enumerate() {
+        let mut spans: Vec<Span> = Vec::new();
+        for (ch_index, ch) in line.chars().enumerate() {
+            let style = if offset + ch_index == cursor_pos {
+                Style::default().add_modifier(Modifier::REVERSED)
+            } else {
+                Style::default()
+            };
+
+            spans.push(Span::styled(ch.to_string(), style));
+
+            if index < input_lines.len() - 1 {
+                spans.push(Span::styled("\n".to_string(), Style::default()));
+            }
+        }
+        offset += line.len();
+        lines.push(Line::from(spans));
+    }
+
+    lines
 }
