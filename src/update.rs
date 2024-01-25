@@ -68,7 +68,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         _ => {}
                     }
                 } else {
-                    app.input_text.insert(app.cursor_pos, value);
+                    app.input_text.insert(app.cursor_pos+1, value);
                     app.inc_cursor()
                 }
             }
