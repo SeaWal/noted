@@ -1,8 +1,9 @@
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span};
+use ratatui::text::{Line, Span,};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
+use tui_textarea::TextArea;
 
 use crate::app::{AppState, CurrentView};
 use crate::note::NoteList;
@@ -21,19 +22,14 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            // let text = vec![Line::from(vec![
-            //     Span::raw(&app.input_text[0..app.cursor_pos]),
-            //     Span::styled(cursor_char, Style::default().bg(Color::LightYellow)),
-            //     Span::raw(&app.input_text[app.cursor_pos + 1..]),
-            // ])];
+            // let text = build(&app.input_text, app.cursor_pos);
 
-            // let text = build_note_text(&app.input_text, app.cursor_pos);
-            let text: Vec<Line<'_>> = build(&app.input_text, app.cursor_pos);
-
-            let pg = Paragraph::new(text)
-                .block(Block::default().title("Editor").borders(Borders::ALL))
-                .wrap(Wrap { trim: false });
-            frame.render_widget(pg, layout[0]);
+            // let pg = Paragraph::new(text)
+            //     .block(Block::default().title("Editor").borders(Borders::ALL))
+            //     .wrap(Wrap { trim: false });
+            // frame.render_widget(pg, layout[0]);
+            let mut text_area = TextArea::from(app.input_text.lines());
+            frame.render_widget(text_area.widget(), layout[0])
         }
     }
 
@@ -46,8 +42,8 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
                 Block::default()
                     .title(app.cursor_pos.to_string())
                     .title_alignment(Alignment::Center)
-                    .borders(Borders::ALL)
-                    .border_type(BorderType::Rounded),
+                    // .borders(Borders::ALL)
+                    // .border_type(BorderType::Rounded),
             )
             .style(Style::default())
             .alignment(Alignment::Center),
@@ -148,3 +144,4 @@ fn build(input_text: &str, cursor_pos: usize) -> Vec<Line> {
 
     lines
 }
+// splitting on '\n' removes these from string so pressing enter to go to new line has no effect
