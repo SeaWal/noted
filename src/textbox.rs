@@ -1,5 +1,12 @@
+pub enum CursorDirection {
+    CursorLeft,
+    CursorRight,
+    CursorUp,
+    CursorDown,
+}
+
 pub struct TextBox {
-    pub lines: String,
+    pub text: String,
     pub line_indices: Vec<usize>,
     pub cursor_pos: usize,
 }
@@ -7,14 +14,32 @@ pub struct TextBox {
 impl TextBox {
     pub fn new() -> Self {
         TextBox {
-            lines: String::new(),
+            text: String::new(),
             line_indices: Vec::new(),
             cursor_pos: 0,
         }
     }
 
+    #[allow(dead_code)]
     fn update_line_indices(&mut self) {
-        self.line_indices = get_newline_index(self.lines.as_str());
+        self.line_indices = get_newline_index(self.text.as_str());
+    }
+
+    pub fn insert_char(&mut self, pos: usize, ch: char) {
+        self.text.insert(pos, ch)
+    }
+
+    pub fn insert_newline(&mut self) {
+        self.insert_char(self.cursor_pos, '\n')
+    }
+
+    pub fn move_cursor(&mut self, direction: CursorDirection) {
+        match direction {
+            CursorDirection::CursorLeft => {}
+            CursorDirection::CursorRight => {}
+            CursorDirection::CursorDown => {}
+            CursorDirection::CursorUp => {}
+        }
     }
 }
 
