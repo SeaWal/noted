@@ -1,12 +1,5 @@
 use std::cmp::{max, min};
 
-pub enum CursorDirection {
-    CursorLeft,
-    CursorRight,
-    CursorUp,
-    CursorDown,
-}
-
 pub struct TextBox {
     pub text: String,
     pub line_indices: Vec<usize>,
@@ -49,28 +42,19 @@ impl TextBox {
     pub fn insert_char(&mut self, pos: usize, ch: char) {
         self.text.insert(pos, ch);
         self.update_line_indices();
-        self.move_cursor(CursorDirection::CursorRight);
+        self.move_cursor_right();
     }
 
     pub fn delete_char(&mut self, pos: usize) {
         self.text.remove(pos);
         self.update_line_indices();
-        self.move_cursor(CursorDirection::CursorLeft);
+        self.move_cursor_left();
     }
 
     pub fn insert_newline(&mut self) {
         self.text.insert(self.cursor_pos, '\n');
         self.update_line_indices();
-        self.move_cursor(CursorDirection::CursorDown);
-    }
-
-    pub fn move_cursor(&mut self, direction: CursorDirection) {
-        match direction {
-            CursorDirection::CursorLeft => {}
-            CursorDirection::CursorRight => {}
-            CursorDirection::CursorDown => {}
-            CursorDirection::CursorUp => {}
-        }
+        self.move_cursor_down();
     }
 
     pub fn move_cursor_right(&mut self) {
@@ -130,4 +114,18 @@ mod tests {
         let idx = get_newline_index(s);
         assert!(idx.is_empty())
     }
+
+    #[test]
+    fn test_textbox_from_string_sets_line_indices(){
+        let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+        assert_eq!(textbox.line_indices, [0,5,8,12])
+    }
+
+    #[test]
+    fn test_textbox_into_string(){
+      let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+      let s: String = textbox.into();
+      assert_eq!(s, "This\nis\nthe\nstring".to_string())
+    }
+
 }
