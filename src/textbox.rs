@@ -1,3 +1,5 @@
+use std::cmp::{max, min};
+
 pub enum CursorDirection {
     CursorLeft,
     CursorRight,
@@ -26,11 +28,21 @@ impl TextBox {
     }
 
     pub fn insert_char(&mut self, pos: usize, ch: char) {
-        self.text.insert(pos, ch)
+        self.text.insert(pos, ch);
+        self.update_line_indices();
+        self.move_cursor(CursorDirection::CursorRight);
+    }
+
+    pub fn delete_char(&mut self, pos: usize) {
+        self.text.remove(pos);
+        self.update_line_indices();
+        self.move_cursor(CursorDirection::CursorLeft);
     }
 
     pub fn insert_newline(&mut self) {
-        self.insert_char(self.cursor_pos, '\n')
+        self.text.insert(self.cursor_pos, '\n');
+        self.update_line_indices();
+        self.move_cursor(CursorDirection::CursorDown);
     }
 
     pub fn move_cursor(&mut self, direction: CursorDirection) {
@@ -40,6 +52,36 @@ impl TextBox {
             CursorDirection::CursorDown => {}
             CursorDirection::CursorUp => {}
         }
+    }
+
+    pub fn move_cursor_right(&mut self) {
+        self.cursor_pos = min(self.cursor_pos + 1, self.text.len())
+    }
+
+    pub fn move_cursor_left(&mut self) {
+        self.cursor_pos = max(self.cursor_pos - 1, 0)
+    }
+
+    pub fn move_cursor_down(&mut self) {
+        if let Some(index) = self.get_current_line_index() {
+            if index > 0 {
+                self.cursor_pos = self.line_indices[index - 1]
+            }
+        }
+    }
+
+    pub fn move_cursor_up(&mut self) {
+        if let Some(index) = self.get_current_line_index() {
+            if index < self.line_indices.len() - 1 {
+                self.cursor_pos = self.line_indices[index + 1]
+            }
+        }
+    }
+
+    fn get_current_line_index(&mut self) -> Option<usize> {
+        self.line_indices
+            .iter()
+            .position(|&start| start <= self.cursor_pos)
     }
 }
 
