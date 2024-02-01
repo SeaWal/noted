@@ -13,6 +13,24 @@ pub struct TextBox {
     pub cursor_pos: usize,
 }
 
+impl From<String> for TextBox {
+    fn from(s: String)-> Self {
+        let mut indices = get_newline_index(&s.clone());
+        indices.insert(0, 0);
+        Self {
+            text: s,
+            line_indices: indices,
+            cursor_pos: 0
+        }
+    }
+}
+
+impl Into<String> for TextBox {
+    fn into(self) -> String {
+        self.text
+    }
+}
+
 impl TextBox {
     pub fn new() -> Self {
         TextBox {
