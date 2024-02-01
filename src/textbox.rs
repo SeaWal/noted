@@ -22,9 +22,10 @@ impl TextBox {
         }
     }
 
-    #[allow(dead_code)]
     fn update_line_indices(&mut self) {
+        self.line_indices.clear();
         self.line_indices = get_newline_index(self.text.as_str());
+        self.line_indices.insert(0, 0);
     }
 
     pub fn insert_char(&mut self, pos: usize, ch: char) {
@@ -88,7 +89,7 @@ impl TextBox {
 fn get_newline_index(text: &str) -> Vec<usize> {
     text.char_indices()
         .filter(|(_, ch)| *ch == '\n')
-        .map(|(i, _)| i)
+        .map(|(i, _)| i + 1)
         .collect()
 }
 
@@ -102,7 +103,7 @@ mod tests {
         let s = "Test\nfinding\nnewline\nchars".into();
         let idx = get_newline_index(s);
 
-        assert_eq!(idx, vec![4, 12, 20])
+        assert_eq!(idx, vec![5, 13, 21])
     }
 
     #[test]
