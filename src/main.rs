@@ -1,6 +1,7 @@
 pub mod app;
 pub mod event;
 pub mod note;
+pub mod textbox;
 pub mod tui;
 pub mod ui;
 pub mod update;
