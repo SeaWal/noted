@@ -30,7 +30,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         Some(note) => note.clone().content,
                         None => String::new(),
                     };
-                    
+                    app.textbox.update_line_indices();
                     app.current_view = CurrentView::Editing
                 }
 
@@ -74,7 +74,6 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
             _ => {
                 app.textbox.handle_input(key_event.code);
-                print!("{}", app.textbox.line_indices[1]);
             }
         },
     }

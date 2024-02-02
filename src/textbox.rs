@@ -41,7 +41,7 @@ impl TextBox {
         }
     }
 
-    fn update_line_indices(&mut self) {
+    pub fn update_line_indices(&mut self) {
         self.line_indices.clear();
         self.line_indices = get_newline_index(self.text.as_str());
         self.line_indices.insert(0, 0);
@@ -103,7 +103,8 @@ impl TextBox {
             _ => {}
         }
 
-        print!("{}", self.cursor_pos);
+        // print!("{}", self.cursor_pos);
+        self.line_indices.iter().for_each(|&el| print!("{} ", el))
     }
 
     fn get_current_line_index(&mut self) -> Option<usize> {
