@@ -1,13 +1,11 @@
-use crossterm::event::KeyCode;
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
 use ratatui::text::{Line, Span};
-use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
+use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState};
 
 use crate::app::{AppState, CurrentView};
 use crate::note::NoteList;
-use crate::textbox::TextBox;
 
 pub fn render(app: &mut AppState, frame: &mut Frame) {
     let layout = Layout::default()
@@ -24,8 +22,6 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         }
         CurrentView::Editing => {
             frame.render_widget(app.textbox.clone(), layout[0]);
-            app.current_key = KeyCode::Null;
-
         }
     }
 
