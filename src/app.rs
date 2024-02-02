@@ -1,5 +1,6 @@
-use crate::note::{Note, NoteList};
+use crate::{note::{Note, NoteList}, textbox::TextBox};
 use anyhow::Result;
+use crossterm::event::KeyCode;
 
 #[derive(Debug)]
 pub enum CurrentView {
@@ -15,6 +16,8 @@ pub struct AppState {
     pub input_text: String,
     pub save_file: String,
     pub cursor_pos: usize,
+    pub current_key: KeyCode,
+    pub textbox: TextBox,
 }
 
 impl AppState {
@@ -28,6 +31,8 @@ impl AppState {
             input_text: String::new(),
             save_file: String::from("./notes/test.json"),
             cursor_pos: 0,
+            current_key: KeyCode::Null,
+            textbox: TextBox::new(),
         }
     }
 

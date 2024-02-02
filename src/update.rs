@@ -26,10 +26,11 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 }
 
                 KeyCode::Enter => {
-                    app.input_text = match app.notes.get(app.current_note) {
+                    app.textbox.text = match app.notes.get(app.current_note) {
                         Some(note) => note.clone().content,
                         None => String::new(),
                     };
+                    
                     app.current_view = CurrentView::Editing
                 }
 
@@ -68,29 +69,13 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         _ => {}
                     }
                 } else {
-                    app.input_text.insert(app.cursor_pos+1, value);
-                    app.inc_cursor()
+                    app.textbox.handle_input(key_event.code)
                 }
             }
-
-            KeyCode::Backspace => {
-                if app.cursor_pos == 0 {
-                    return;
-                };
-                let _ = app.input_text.remove(app.cursor_pos);
-                app.dec_cursor();
+            _ => {
+                app.textbox.handle_input(key_event.code);
+                print!("{}", app.textbox.line_indices[1]);
             }
-
-            KeyCode::Enter => app.input_text.push('\n'),
-
-            KeyCode::Left => app.dec_cursor(),
-
-            KeyCode::Right => app.inc_cursor(),
-
-            KeyCode::Down => app.inc_line(),
-
-            KeyCode::Up => app.dec_line(),
-            _ => {}
         },
     }
 }

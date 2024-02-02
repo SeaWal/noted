@@ -1,12 +1,13 @@
+use crossterm::event::KeyCode;
 use ratatui::layout::{Constraint, Layout};
 use ratatui::prelude::{Alignment, Frame};
 use ratatui::style::{Color, Modifier, Style, Stylize};
-use ratatui::text::{Line, Span,};
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, BorderType, Borders, Cell, Paragraph, Row, Table, TableState, Wrap};
-use tui_textarea::TextArea;
 
 use crate::app::{AppState, CurrentView};
 use crate::note::NoteList;
+use crate::textbox::TextBox;
 
 pub fn render(app: &mut AppState, frame: &mut Frame) {
     let layout = Layout::default()
@@ -22,14 +23,9 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
             frame.render_stateful_widget(list, layout[0], &mut idx);
         }
         CurrentView::Editing => {
-            // let text = build(&app.input_text, app.cursor_pos);
+            frame.render_widget(app.textbox.clone(), layout[0]);
+            app.current_key = KeyCode::Null;
 
-            // let pg = Paragraph::new(text)
-            //     .block(Block::default().title("Editor").borders(Borders::ALL))
-            //     .wrap(Wrap { trim: false });
-            // frame.render_widget(pg, layout[0]);
-            let mut text_area = TextArea::from(app.input_text.lines());
-            frame.render_widget(text_area.widget(), layout[0])
         }
     }
 
@@ -40,10 +36,9 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         Paragraph::new("")
             .block(
                 Block::default()
-                    .title(app.cursor_pos.to_string())
-                    .title_alignment(Alignment::Center)
-                    // .borders(Borders::ALL)
-                    // .border_type(BorderType::Rounded),
+                    .title(app.textbox.cursor_pos.to_string())
+                    .title_alignment(Alignment::Center), // .borders(Borders::ALL)
+                                                         // .border_type(BorderType::Rounded),
             )
             .style(Style::default())
             .alignment(Alignment::Center),
@@ -91,57 +86,32 @@ fn render_notes(note_list: &mut NoteList) -> Table<'_> {
 fn render_nav(app: &mut AppState) -> Paragraph<'_> {
     let nav_hints = {
         match app.current_view {
-            CurrentView::Main => Span::styled("((q/Esc) to quit", Style::default()),
+            CurrentView::Main => Span::styled("(q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => Span::styled("((Esc) to quit", Style::default()),
+            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
         }
     };
 
     Paragraph::new(Line::from(nav_hints))
 }
 
-fn _build_note_text(input_text: &str, cursor_pos: usize) -> Vec<Line> {
-    let mut spans: Vec<Span> = Vec::default();
-    for (i, ch) in input_text.chars().enumerate() {
-        if ch == '\n' {
-            spans.push(Span::raw("↵"));
-        } else {
-            let style = if i == cursor_pos {
-                Style::default().fg(Color::White).bg(Color::LightYellow)
-            } else {
-                Style::default().fg(Color::White)
-            };
-            spans.push(Span::styled(ch.to_string(), style));
-        }
-    }
-
-    vec![Line::from(spans)]
-}
-
-fn build(input_text: &str, cursor_pos: usize) -> Vec<Line> {
-    let mut lines: Vec<Line> = Vec::new();
-    let input_lines: Vec<&str> = input_text.split('\n').collect();
-
+fn build2(input_text: &str, cursor_pos: usize) -> Vec<Line> {
+    let mut lines = Vec::new();
     let mut offset = 0;
-    for (index, line) in input_lines.iter().enumerate() {
-        let mut spans: Vec<Span> = Vec::new();
-        for (ch_index, ch) in line.chars().enumerate() {
-            let style = if offset + ch_index == cursor_pos {
+    for line in input_text.lines() {
+        let mut spans = Vec::new();
+        for (index, ch) in line.char_indices() {
+            let style = if offset + index == cursor_pos {
                 Style::default().add_modifier(Modifier::REVERSED)
             } else {
                 Style::default()
             };
-
             spans.push(Span::styled(ch.to_string(), style));
-
-            if index < input_lines.len() - 1 {
-                spans.push(Span::styled("\n".to_string(), Style::default()));
-            }
         }
+        spans.push(Span::styled('\n'.to_string(), Style::default()));
         offset += line.len();
-        lines.push(Line::from(spans));
+        lines.push(Line::from(spans))
     }
 
     lines
 }
-// splitting on '\n' removes these from string so pressing enter to go to new line has no effect

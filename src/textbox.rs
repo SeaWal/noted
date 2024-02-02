@@ -1,5 +1,13 @@
-use std::cmp::{max, min};
+use std::cmp::min;
 
+use crossterm::event::KeyCode;
+use ratatui::{
+    layout::Rect,
+    text::Span,
+    widgets::{Block, Borders, Paragraph, Widget, Wrap},
+};
+
+#[derive(Clone, Debug)]
 pub struct TextBox {
     pub text: String,
     pub line_indices: Vec<usize>,
@@ -7,13 +15,13 @@ pub struct TextBox {
 }
 
 impl From<String> for TextBox {
-    fn from(s: String)-> Self {
+    fn from(s: String) -> Self {
         let mut indices = get_newline_index(&s.clone());
         indices.insert(0, 0);
         Self {
             text: s,
             line_indices: indices,
-            cursor_pos: 0
+            cursor_pos: 0,
         }
     }
 }
@@ -46,9 +54,11 @@ impl TextBox {
     }
 
     pub fn delete_char(&mut self, pos: usize) {
-        self.text.remove(pos);
-        self.update_line_indices();
-        self.move_cursor_left();
+        if pos > 0 {
+            self.text.remove(pos);
+            self.update_line_indices();
+            self.move_cursor_left();
+        }
     }
 
     pub fn insert_newline(&mut self) {
@@ -58,11 +68,11 @@ impl TextBox {
     }
 
     pub fn move_cursor_right(&mut self) {
-        self.cursor_pos = min(self.cursor_pos + 1, self.text.len())
+        self.cursor_pos = min(self.cursor_pos + 1, self.text.len());
     }
 
     pub fn move_cursor_left(&mut self) {
-        self.cursor_pos = max(self.cursor_pos - 1, 0)
+        self.cursor_pos = self.cursor_pos.saturating_sub(1)
     }
 
     pub fn move_cursor_down(&mut self) {
@@ -81,10 +91,35 @@ impl TextBox {
         }
     }
 
+    pub fn handle_input(&mut self, key: KeyCode) {
+        match key {
+            KeyCode::Backspace => self.delete_char(self.cursor_pos),
+            KeyCode::Right => self.move_cursor_right(),
+            KeyCode::Left => self.move_cursor_left(),
+            KeyCode::Down => self.move_cursor_down(),
+            KeyCode::Up => self.move_cursor_up(),
+            KeyCode::Enter => self.insert_newline(),
+            KeyCode::Char(ch) => self.insert_char(self.cursor_pos, ch),
+            _ => {}
+        }
+
+        print!("{}", self.cursor_pos);
+    }
+
     fn get_current_line_index(&mut self) -> Option<usize> {
         self.line_indices
             .iter()
             .position(|&start| start <= self.cursor_pos)
+    }
+}
+
+impl Widget for TextBox {
+    fn render(self, area: Rect, buf: &mut ratatui::buffer::Buffer) {
+        let text = Span::from(self.text.clone());
+        Paragraph::new(text)
+            .block(Block::default().borders(Borders::ALL))
+            .wrap(Wrap { trim: false })
+            .render(area, buf);
     }
 }
 
@@ -116,16 +151,15 @@ mod tests {
     }
 
     #[test]
-    fn test_textbox_from_string_sets_line_indices(){
+    fn test_textbox_from_string_sets_line_indices() {
         let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
-        assert_eq!(textbox.line_indices, [0,5,8,12])
+        assert_eq!(textbox.line_indices, [0, 5, 8, 12])
     }
 
     #[test]
-    fn test_textbox_into_string(){
-      let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
-      let s: String = textbox.into();
-      assert_eq!(s, "This\nis\nthe\nstring".to_string())
+    fn test_textbox_into_string() {
+        let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+        let s: String = textbox.into();
+        assert_eq!(s, "This\nis\nthe\nstring".to_string())
     }
-
 }
