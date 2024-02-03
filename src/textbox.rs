@@ -16,8 +16,7 @@ pub struct TextBox {
 
 impl From<String> for TextBox {
     fn from(s: String) -> Self {
-        let mut indices = get_newline_index(&s.clone());
-        indices.insert(0, 0);
+        let indices = get_newline_index(&s.clone());
         Self {
             text: s,
             line_indices: indices,
@@ -44,7 +43,6 @@ impl TextBox {
     pub fn update_line_indices(&mut self) {
         self.line_indices.clear();
         self.line_indices = get_newline_index(self.text.as_str());
-        self.line_indices.insert(0, 0);
     }
 
     pub fn insert_char(&mut self, pos: usize, ch: char) {
@@ -54,7 +52,7 @@ impl TextBox {
     }
 
     pub fn delete_char(&mut self, pos: usize) {
-        if pos > 0 {
+        if pos >= 0 {
             self.text.remove(pos);
             self.update_line_indices();
             self.move_cursor_left();
@@ -125,10 +123,21 @@ impl Widget for TextBox {
 }
 
 fn get_newline_index(text: &str) -> Vec<usize> {
-    text.char_indices()
-        .filter(|(_, ch)| *ch == '\n')
-        .map(|(i, _)| i + 1)
-        .collect()
+    let mut indices: Vec<usize> = Vec::new();
+    let mut current_line_start = 0;
+
+    for (index, ch) in text.char_indices() {
+        if ch == '\n' || index == text.len() - 1 {
+            indices.push(current_line_start);
+            current_line_start = index + 1;
+        }
+    }
+
+    // if !text.ends_with('\n') {
+    //     indices.push(current_line_start)
+    // }
+
+    indices
 }
 
 #[cfg(test)]
@@ -137,18 +146,18 @@ mod tests {
     use super::*;
 
     #[test]
-    fn test_get_newline_index_finds_all_newlines() {
+    fn test_get_newline_index_finds_all_line_starts() {
         let s = "Test\nfinding\nnewline\nchars".into();
         let idx = get_newline_index(s);
 
-        assert_eq!(idx, vec![5, 13, 21])
+        assert_eq!(idx, vec![0, 5, 13, 21])
     }
 
     #[test]
     fn test_get_newline_index_with_no_newline_chars() {
         let s = "A String With No Newlines".into();
         let idx = get_newline_index(s);
-        assert!(idx.is_empty())
+        assert_eq!(idx, vec![0])
     }
 
     #[test]
