@@ -73,18 +73,20 @@ impl TextBox {
         self.cursor_pos = self.cursor_pos.saturating_sub(1)
     }
 
-    pub fn move_cursor_down(&mut self) {
+    pub fn move_cursor_up(&mut self) {
         if let Some(index) = self.get_current_line_index() {
             if index > 0 {
-                self.cursor_pos = self.line_indices[index - 1]
+                self.cursor_pos = self.line_indices[index - 1];
+                print!("up")
             }
         }
     }
 
-    pub fn move_cursor_up(&mut self) {
+    pub fn move_cursor_down(&mut self) {
         if let Some(index) = self.get_current_line_index() {
             if index < self.line_indices.len() - 1 {
-                self.cursor_pos = self.line_indices[index + 1]
+                self.cursor_pos = self.line_indices[index + 1];
+                print!("down")
             }
         }
     }
@@ -102,7 +104,7 @@ impl TextBox {
         }
 
         // print!("{}", self.cursor_pos);
-        self.line_indices.iter().for_each(|&el| print!("{} ", el))
+        // self.line_indices.iter().for_each(|&el| print!("{} ", el))
     }
 
     fn get_current_line_index(&mut self) -> Option<usize> {
