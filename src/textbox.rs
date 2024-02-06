@@ -74,19 +74,21 @@ impl TextBox {
     }
 
     pub fn move_cursor_up(&mut self) {
+        print!("{}", self.get_current_line_index().unwrap_or(1000));
         if let Some(index) = self.get_current_line_index() {
             if index > 0 {
                 self.cursor_pos = self.line_indices[index - 1];
-                print!("up")
+                // print!("up")
             }
         }
     }
 
     pub fn move_cursor_down(&mut self) {
+        print!("{}", self.get_current_line_index().unwrap_or(1000));
         if let Some(index) = self.get_current_line_index() {
             if index < self.line_indices.len() - 1 {
                 self.cursor_pos = self.line_indices[index + 1];
-                print!("down")
+                // print!("down")
             }
         }
     }
@@ -110,7 +112,10 @@ impl TextBox {
     fn get_current_line_index(&mut self) -> Option<usize> {
         self.line_indices
             .iter()
-            .position(|&start| start <= self.cursor_pos)
+            .enumerate()
+            .find(|(_, &start)| self.cursor_pos < start)
+            .map(|(index, _)| index - 1)
+            .or_else(|| Some(self.line_indices.len() - 1))
     }
 }
 
@@ -173,5 +178,28 @@ mod tests {
         let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
         let s: String = textbox.into();
         assert_eq!(s, "This\nis\nthe\nstring".to_string())
+    }
+
+    #[test]
+    fn test_move_cursor_down_switches_lines() {
+        let mut textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+        assert_eq!(textbox.get_current_line_index().unwrap(), 0);
+
+        textbox.move_cursor_down();
+        textbox.move_cursor_down();
+
+        assert_eq!(textbox.get_current_line_index().unwrap(), 2);
+    }
+
+    #[test]
+    fn test_move_cursor_up_switches_lines() {
+        let mut textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+        textbox.move_cursor_down();
+        textbox.move_cursor_down();
+
+        assert_eq!(textbox.get_current_line_index().unwrap(), 2);
+
+        textbox.move_cursor_up();
+        assert_eq!(textbox.get_current_line_index().unwrap(), 1);
     }
 }
