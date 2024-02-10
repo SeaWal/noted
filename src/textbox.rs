@@ -3,7 +3,8 @@ use std::cmp::min;
 use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
-    text::Span,
+    style::{Modifier, Style},
+    text::{Line, Span},
     widgets::{Block, Borders, Paragraph, Widget, Wrap},
 };
 
@@ -52,11 +53,9 @@ impl TextBox {
     }
 
     pub fn delete_char(&mut self, pos: usize) {
-        if pos >= 0 {
-            self.text.remove(pos);
-            self.update_line_indices();
-            self.move_cursor_left();
-        }
+        self.text.remove(pos);
+        self.update_line_indices();
+        self.move_cursor_left();
     }
 
     pub fn insert_newline(&mut self) {
@@ -74,21 +73,17 @@ impl TextBox {
     }
 
     pub fn move_cursor_up(&mut self) {
-        print!("{}", self.get_current_line_index().unwrap_or(1000));
         if let Some(index) = self.get_current_line_index() {
             if index > 0 {
                 self.cursor_pos = self.line_indices[index - 1];
-                // print!("up")
             }
         }
     }
 
     pub fn move_cursor_down(&mut self) {
-        print!("{}", self.get_current_line_index().unwrap_or(1000));
         if let Some(index) = self.get_current_line_index() {
             if index < self.line_indices.len() - 1 {
                 self.cursor_pos = self.line_indices[index + 1];
-                // print!("down")
             }
         }
     }
@@ -104,9 +99,6 @@ impl TextBox {
             KeyCode::Char(ch) => self.insert_char(self.cursor_pos, ch),
             _ => {}
         }
-
-        // print!("{}", self.cursor_pos);
-        // self.line_indices.iter().for_each(|&el| print!("{} ", el))
     }
 
     fn get_current_line_index(&mut self) -> Option<usize> {
@@ -121,12 +113,33 @@ impl TextBox {
 
 impl Widget for TextBox {
     fn render(self, area: Rect, buf: &mut ratatui::buffer::Buffer) {
-        let text = Span::from(self.text.clone());
-        Paragraph::new(text)
+        let text = self.text.clone();
+        let tb = build_textbox(text.as_str(), self.cursor_pos);
+        Paragraph::new(tb)
             .block(Block::default().borders(Borders::ALL))
             .wrap(Wrap { trim: false })
             .render(area, buf);
     }
+}
+
+fn build_textbox(text: &str, cursor_pos: usize) -> Vec<Line> {
+    let mut lines = Vec::new();
+    let mut offset = 0;
+    for line in text.lines() {
+        let mut spans = Vec::new();
+        for (index, ch) in line.char_indices() {
+            let style = if offset + index == cursor_pos {
+                Style::default().add_modifier(Modifier::REVERSED)
+            } else {
+                Style::default()
+            };
+            spans.push(Span::styled(ch.to_string(), style));
+        }
+        spans.push(Span::styled('\n'.to_string(), Style::default()));
+        offset += line.len();
+        lines.push(Line::from(spans))
+    }
+    lines
 }
 
 fn get_newline_index(text: &str) -> Vec<usize> {
@@ -139,10 +152,6 @@ fn get_newline_index(text: &str) -> Vec<usize> {
             current_line_start = index + 1;
         }
     }
-
-    // if !text.ends_with('\n') {
-    //     indices.push(current_line_start)
-    // }
 
     indices
 }
