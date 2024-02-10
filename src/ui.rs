@@ -90,24 +90,3 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
 
     Paragraph::new(Line::from(nav_hints))
 }
-
-fn build2(input_text: &str, cursor_pos: usize) -> Vec<Line> {
-    let mut lines = Vec::new();
-    let mut offset = 0;
-    for line in input_text.lines() {
-        let mut spans = Vec::new();
-        for (index, ch) in line.char_indices() {
-            let style = if offset + index == cursor_pos {
-                Style::default().add_modifier(Modifier::REVERSED)
-            } else {
-                Style::default()
-            };
-            spans.push(Span::styled(ch.to_string(), style));
-        }
-        spans.push(Span::styled('\n'.to_string(), Style::default()));
-        offset += line.len();
-        lines.push(Line::from(spans))
-    }
-
-    lines
-}
