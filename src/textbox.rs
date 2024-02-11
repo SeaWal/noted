@@ -53,7 +53,11 @@ impl TextBox {
     }
 
     pub fn delete_char(&mut self, pos: usize) {
-        self.text.remove(pos);
+        if pos == self.text.len() {
+            self.text.pop();
+        } else {
+            self.text.remove(pos);
+        }
         self.update_line_indices();
         self.move_cursor_left();
     }
