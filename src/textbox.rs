@@ -77,6 +77,9 @@ impl TextBox {
     }
 
     pub fn move_cursor_up(&mut self) {
+        if self.text.is_empty() {
+            return;
+        }
         if let Some(index) = self.get_current_line_index() {
             if index > 0 {
                 self.cursor_pos = self.line_indices[index - 1];
@@ -85,6 +88,9 @@ impl TextBox {
     }
 
     pub fn move_cursor_down(&mut self) {
+        if self.text.is_empty() {
+            return;
+        }
         if let Some(index) = self.get_current_line_index() {
             if index < self.line_indices.len() - 1 {
                 self.cursor_pos = self.line_indices[index + 1];
