@@ -1,5 +1,3 @@
-use std::cmp::min;
-
 use crossterm::event::KeyCode;
 use ratatui::{
     layout::Rect,
@@ -9,216 +7,214 @@ use ratatui::{
 };
 
 #[derive(Clone, Debug)]
+struct Cursor {
+    row: usize,
+    col: usize,
+}
+
+#[derive(Clone, Debug)]
 pub struct TextBox {
-    pub text: String,
-    pub line_indices: Vec<usize>,
-    pub cursor_pos: usize,
+    pub text: Vec<String>,
+    cursor: Cursor,
 }
 
-impl From<String> for TextBox {
-    fn from(s: String) -> Self {
-        let indices = get_newline_index(&s.clone());
+impl From<Vec<String>> for TextBox {
+    fn from(v: Vec<String>) -> Self {
         Self {
-            text: s,
-            line_indices: indices,
-            cursor_pos: 0,
+            text: v,
+            cursor: Cursor { row: 0, col: 0 },
         }
-    }
-}
-
-impl Into<String> for TextBox {
-    fn into(self) -> String {
-        self.text
     }
 }
 
 impl TextBox {
     pub fn new() -> Self {
         TextBox {
-            text: String::new(),
-            line_indices: Vec::new(),
-            cursor_pos: 0,
-        }
-    }
-
-    pub fn update_line_indices(&mut self) {
-        self.line_indices.clear();
-        self.line_indices = get_newline_index(self.text.as_str());
-    }
-
-    pub fn insert_char(&mut self, pos: usize, ch: char) {
-        self.text.insert(pos, ch);
-        self.update_line_indices();
-        self.move_cursor_right();
-    }
-
-    pub fn delete_char(&mut self, pos: usize) {
-        if pos == self.text.len() {
-            self.text.pop();
-        } else {
-            self.text.remove(pos);
-        }
-        self.update_line_indices();
-        self.move_cursor_left();
-    }
-
-    pub fn insert_newline(&mut self) {
-        self.text.insert(self.cursor_pos, '\n');
-        self.update_line_indices();
-        self.move_cursor_down();
-    }
-
-    pub fn move_cursor_right(&mut self) {
-        self.cursor_pos = min(self.cursor_pos + 1, self.text.len());
-    }
-
-    pub fn move_cursor_left(&mut self) {
-        self.cursor_pos = self.cursor_pos.saturating_sub(1)
-    }
-
-    pub fn move_cursor_up(&mut self) {
-        if self.text.is_empty() {
-            return;
-        }
-        if let Some(index) = self.get_current_line_index() {
-            if index > 0 {
-                self.cursor_pos = self.line_indices[index - 1];
-            }
-        }
-    }
-
-    pub fn move_cursor_down(&mut self) {
-        if self.text.is_empty() {
-            return;
-        }
-        if let Some(index) = self.get_current_line_index() {
-            if index < self.line_indices.len() - 1 {
-                self.cursor_pos = self.line_indices[index + 1];
-            }
+            text: Vec::new(),
+            cursor: Cursor { row: 0, col: 0 },
         }
     }
 
     pub fn handle_input(&mut self, key: KeyCode) {
         match key {
-            KeyCode::Backspace => self.delete_char(self.cursor_pos),
             KeyCode::Right => self.move_cursor_right(),
             KeyCode::Left => self.move_cursor_left(),
             KeyCode::Down => self.move_cursor_down(),
             KeyCode::Up => self.move_cursor_up(),
             KeyCode::Enter => self.insert_newline(),
-            KeyCode::Char(ch) => self.insert_char(self.cursor_pos, ch),
+            KeyCode::Char(ch) => self.insert_char(ch),
+            KeyCode::Backspace => self.delete_char(),
             _ => {}
         }
     }
 
-    fn get_current_line_index(&mut self) -> Option<usize> {
-        self.line_indices
-            .iter()
-            .enumerate()
-            .find(|(_, &start)| self.cursor_pos < start)
-            .map(|(index, _)| index - 1)
-            .or_else(|| Some(self.line_indices.len() - 1))
+    fn move_cursor_right(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let curr_line = &self.text[row];
+        if col < curr_line.len() {
+            self.cursor.col = col.saturating_add(1);
+        } else {
+            if row + 1 < self.text.len() {
+                self.cursor.row = row.saturating_add(1);
+                self.cursor.col = 0;
+            }
+        }
+    }
+
+    fn move_cursor_left(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let curr_line = &self.text[row];
+
+        if col > 0 {
+            self.cursor.col = col.saturating_sub(1);
+        }
+
+        if (col == 0) & (row - 1 > 0) {
+            self.cursor.row = row.saturating_sub(1);
+            self.cursor.col = curr_line.len() - 1;
+        }
+    }
+
+    fn move_cursor_down(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+
+        if row + 1 < self.text.len() {
+            self.cursor.row = row.saturating_add(1);
+
+            let next_line_len = self.text[row + 1].len();
+            if col > next_line_len {
+                self.cursor.col = next_line_len;
+            }
+        }
+    }
+
+    fn move_cursor_up(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+
+        if row - 1 >= 0 {
+            self.cursor.row = row.saturating_sub(1);
+
+            let next_line_len = self.text[row + 1].len();
+            if col > next_line_len {
+                self.cursor.col = next_line_len;
+            }
+        }
+    }
+
+    fn insert_char(&mut self, ch: char) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let curr_line = &mut self.text[row];
+        curr_line.insert(col, ch);
+    }
+
+    fn insert_newline(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let line = &mut self.text[row];
+
+        // we could be in the middle of a line of text
+        let pos_in_line = line
+            .char_indices()
+            .nth(col)
+            .map(|(i, _)| i)
+            .unwrap_or(line.len());
+        let newline: String = line[pos_in_line..].to_string();
+        line.truncate(pos_in_line);
+        self.text.insert(row + 1, newline);
+        self.cursor.row = row.saturating_add(1);
+        self.cursor.col = 0;
+    }
+
+    fn delete_char(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        if col == 0 {
+            self.delete_line();
+        } else {
+            let line = &mut self.text[row];
+            line.remove(col - 1);
+            self.cursor.col = col.saturating_sub(1);
+        }
+    }
+
+    fn delete_line(&mut self) {
+        let (row, _) = (self.cursor.row, self.cursor.col);
+        if row == 0 {
+            return;
+        }
+
+        let curr_line = self.text.remove(row);
+        let prev_line = &mut self.text[row - 1];
+
+        self.cursor.row = row.saturating_sub(1);
+        self.cursor.col = prev_line.chars().count();
+
+        prev_line.push_str(&curr_line);
     }
 }
 
 impl Widget for TextBox {
-    fn render(self, area: Rect, buf: &mut ratatui::buffer::Buffer) {
-        let text = self.text.clone();
-        let tb = build_textbox(text.as_str(), self.cursor_pos);
-        Paragraph::new(tb)
+    fn render(self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
+        let mut lines: Vec<Span> = Vec::new();
+        for line in self.text.iter() {
+            lines.push(Span::from(line));
+        }
+        Paragraph::new(Line::from(lines))
             .block(Block::default().borders(Borders::ALL))
             .wrap(Wrap { trim: false })
             .render(area, buf);
     }
 }
 
-fn build_textbox(text: &str, cursor_pos: usize) -> Vec<Line> {
-    let mut lines = Vec::new();
-    let mut offset = 0;
-    for line in text.lines() {
-        let mut spans = Vec::new();
-        for (index, ch) in line.char_indices() {
-            let style = if offset + index == cursor_pos {
-                Style::default().add_modifier(Modifier::REVERSED)
-            } else {
-                Style::default()
-            };
-            spans.push(Span::styled(ch.to_string(), style));
-        }
-        spans.push(Span::styled('\n'.to_string(), Style::default()));
-        offset += line.len();
-        lines.push(Line::from(spans))
-    }
-    lines
-}
-
-fn get_newline_index(text: &str) -> Vec<usize> {
-    let mut indices: Vec<usize> = Vec::new();
-    let mut current_line_start = 0;
-
-    for (index, ch) in text.char_indices() {
-        if ch == '\n' || index == text.len() - 1 {
-            indices.push(current_line_start);
-            current_line_start = index + 1;
-        }
-    }
-
-    indices
-}
-
 #[cfg(test)]
 mod tests {
-
     use super::*;
 
     #[test]
-    fn test_get_newline_index_finds_all_line_starts() {
-        let s = "Test\nfinding\nnewline\nchars".into();
-        let idx = get_newline_index(s);
-
-        assert_eq!(idx, vec![0, 5, 13, 21])
+    fn test_move_cursor_right() {
+        let text = vec![
+            "Lorem ipsum".into(),
+            "dolor sit amet".into(),
+            "consectetur".into(),
+        ];
+        let mut textbox = TextBox::from(text);
+        textbox.move_cursor_right();
+        assert_eq!(textbox.cursor.col, 1);
     }
 
     #[test]
-    fn test_get_newline_index_with_no_newline_chars() {
-        let s = "A String With No Newlines".into();
-        let idx = get_newline_index(s);
-        assert_eq!(idx, vec![0])
+    fn test_move_cursor_left() {
+        let text = vec![
+            "Lorem ipsum".into(),
+            "dolor sit amet".into(),
+            "consectetur".into(),
+        ];
+        let mut textbox = TextBox::from(text);
+        textbox.move_cursor_right();
+        textbox.move_cursor_left();
+        assert_eq!(textbox.cursor.col, 0);
     }
 
     #[test]
-    fn test_textbox_from_string_sets_line_indices() {
-        let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
-        assert_eq!(textbox.line_indices, [0, 5, 8, 12])
-    }
-
-    #[test]
-    fn test_textbox_into_string() {
-        let textbox = TextBox::from("This\nis\nthe\nstring".to_string());
-        let s: String = textbox.into();
-        assert_eq!(s, "This\nis\nthe\nstring".to_string())
-    }
-
-    #[test]
-    fn test_move_cursor_down_switches_lines() {
-        let mut textbox = TextBox::from("This\nis\nthe\nstring".to_string());
-        assert_eq!(textbox.get_current_line_index().unwrap(), 0);
-
+    fn test_move_cursor_down() {
+        let text = vec![
+            "Lorem ipsum".into(),
+            "dolor sit amet".into(),
+            "consectetur".into(),
+        ];
+        let mut textbox = TextBox::from(text);
         textbox.move_cursor_down();
-        textbox.move_cursor_down();
-
-        assert_eq!(textbox.get_current_line_index().unwrap(), 2);
+        assert_eq!(textbox.cursor.row, 1);
     }
 
     #[test]
-    fn test_move_cursor_up_switches_lines() {
-        let mut textbox = TextBox::from("This\nis\nthe\nstring".to_string());
+    fn test_move_cursor_up() {
+        let text = vec![
+            "Lorem ipsum".into(),
+            "dolor sit amet".into(),
+            "consectetur".into(),
+        ];
+        let mut textbox = TextBox::from(text);
         textbox.move_cursor_down();
-        textbox.move_cursor_down();
-
-        assert_eq!(textbox.get_current_line_index().unwrap(), 2);
-
         textbox.move_cursor_up();
-        assert_eq!(textbox.get_current_line_index().unwrap(), 1);
+        assert_eq!(textbox.cursor.row, 0);
     }
 }
