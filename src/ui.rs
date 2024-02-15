@@ -32,7 +32,7 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         Paragraph::new("")
             .block(
                 Block::default()
-                    .title(app.textbox.cursor_pos.to_string())
+                    .title(app.textbox.cursor.row.to_string())
                     .title_alignment(Alignment::Center), // .borders(Borders::ALL)
                                                          // .border_type(BorderType::Rounded),
             )
