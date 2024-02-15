@@ -8,14 +8,14 @@ use ratatui::{
 
 #[derive(Clone, Debug)]
 struct Cursor {
-    row: usize,
-    col: usize,
+    pub row: usize,
+    pub col: usize,
 }
 
 #[derive(Clone, Debug)]
 pub struct TextBox {
     pub text: Vec<String>,
-    cursor: Cursor,
+    pub cursor: Cursor,
 }
 
 impl From<Vec<String>> for TextBox {
