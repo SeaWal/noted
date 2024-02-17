@@ -62,15 +62,13 @@ impl TextBox {
 
     fn move_cursor_left(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-        let curr_line = &self.text[row];
 
-        if col > 0 {
-            self.cursor.col = col.saturating_sub(1);
-        }
-
-        if (col == 0) & (row - 1 > 0) {
-            self.cursor.row = row.saturating_sub(1);
-            self.cursor.col = curr_line.len() - 1;
+        if col == 0 && row > 0 {
+            let prev_row_line = self.text[row - 1].chars().count();
+            self.cursor.row = row - 1;
+            self.cursor.col = prev_row_line;
+        } else if col > 0 {
+            self.cursor.col = col - 1;
         }
     }
 
