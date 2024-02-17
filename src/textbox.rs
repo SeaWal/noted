@@ -49,14 +49,13 @@ impl TextBox {
 
     fn move_cursor_right(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-        let curr_line = &self.text[row];
-        if col < curr_line.len() {
-            self.cursor.col = col.saturating_add(1);
-        } else {
-            if row + 1 < self.text.len() {
-                self.cursor.row = row.saturating_add(1);
-                self.cursor.col = 0;
-            }
+        let row_len = self.text[row].chars().count();
+
+        if col == row_len && row < self.text.len() - 1 {
+            self.cursor.col = 0;
+            self.cursor.row = row + 1;
+        } else if col < row_len {
+            self.cursor.col = col + 1;
         }
     }
 
@@ -74,27 +73,22 @@ impl TextBox {
 
     fn move_cursor_down(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-
-        if row + 1 < self.text.len() {
-            self.cursor.row = row.saturating_add(1);
-
-            let next_line_len = self.text[row + 1].len();
-            if col > next_line_len {
-                self.cursor.col = next_line_len;
+        if row < self.text.len() - 1 {
+            self.cursor.row = row + 1;
+            if col > self.text[row + 1].chars().count() {
+                self.cursor.col = self.text[row + 1].chars().count()
             }
         }
     }
 
     fn move_cursor_up(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-
-        if row - 1 >= 0 {
-            self.cursor.row = row.saturating_sub(1);
-
-            let next_line_len = self.text[row + 1].len();
-            if col > next_line_len {
-                self.cursor.col = next_line_len;
-            }
+        
+        if row > 0 {
+            self.cursor.row = row - 1;
+            if col > self.text[row - 1].chars().count() {
+                self.cursor.col = self.text[row - 1].chars().count()
+            } 
         }
     }
 
