@@ -7,7 +7,7 @@ use ratatui::{
 };
 
 #[derive(Clone, Debug)]
-struct Cursor {
+pub struct Cursor {
     pub row: usize,
     pub col: usize,
 }
