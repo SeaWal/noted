@@ -28,9 +28,8 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 KeyCode::Enter => {
                     app.textbox.text = match app.notes.get(app.current_note) {
                         Some(note) => note.clone().content,
-                        None => String::new(),
+                        None => Vec::new(),
                     };
-                    app.textbox.update_line_indices();
                     app.current_view = CurrentView::Editing
                 }
 

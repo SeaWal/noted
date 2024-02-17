@@ -13,7 +13,7 @@ pub const DB_PATH: &str = "../notes/notes.json";
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Note {
     pub title: String,
-    pub content: String,
+    pub content: Vec<String>,
     pub created_at: DateTime<Utc>,
 }
 
@@ -27,7 +27,7 @@ impl Note {
     pub fn new(title: &str, content: &str) -> Self {
         Note {
             title: String::from(title),
-            content: String::from(content),
+            content: Vec::new(),
             created_at: Utc::now(),
         }
     }
@@ -36,11 +36,11 @@ impl Note {
         self.title = String::from(title)
     }
 
-    pub fn set_content(&mut self, content: &str) {
-        self.content = String::from(content)
+    pub fn set_content(&mut self, content: Vec<String>) {
+        self.content = content
     }
 
-    pub fn update(&mut self, title: &str, content: &str) {
+    pub fn update(&mut self, title: &str, content: Vec<String>) {
         self.set_title(title);
         self.set_content(content);
     }
@@ -122,7 +122,7 @@ mod tests {
     fn test_note_deleted() {
         let note = Note {
             title: "title".into(),
-            content: "content".into(),
+            content: vec!["This".into(), "is".into(), "the".into(), "content".into()],
             created_at: Utc::now(),
         };
 
