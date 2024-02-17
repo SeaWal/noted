@@ -29,7 +29,7 @@ impl Tui {
             panic_hook(panic);
         }));
 
-        self.terminal.hide_cursor()?;
+        self.terminal.hide_cursor()?; 
         self.terminal.clear()?;
         Ok(())
     }

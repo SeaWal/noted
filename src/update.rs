@@ -19,7 +19,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 }
                 // on home screen, create/open a note
                 KeyCode::Char('n') => {
-                    let note = Note::new("", "");
+                    let note = Note::new("", Vec::new());
                     app.notes.insert(&note);
 
                     app.current_view = CurrentView::Editing

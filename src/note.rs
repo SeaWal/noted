@@ -24,10 +24,10 @@ impl Display for Note {
 }
 
 impl Note {
-    pub fn new(title: &str, content: &str) -> Self {
+    pub fn new(title: &str, content: Vec<String>) -> Self {
         Note {
             title: String::from(title),
-            content: Vec::new(),
+            content: content,
             created_at: Utc::now(),
         }
     }
@@ -83,10 +83,10 @@ impl NoteList {
     }
 
     pub fn load(file_path: &str) -> Result<Self> {
-        let mut file = File::open(&file_path)?;
+        let mut file = File::open(file_path).expect("File does not exist");
         let mut json_string = String::new();
-        let _ = file.read_to_string(&mut json_string)?;
-        let note_list: NoteList = serde_json::from_str(&json_string)?;
+        let _ = file.read_to_string(&mut json_string).expect("Couldn't read from JSON");
+        let note_list: NoteList = serde_json::from_str(&json_string).expect("Couldn't load JSON into NoteList");
         Ok(note_list)
     }
 
@@ -108,12 +108,14 @@ impl NoteList {
 #[cfg(test)]
 mod tests {
 
+    use std::fs;
+
     use super::*;
 
     #[test]
     fn test_note_inserted() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new("", ""));
+        note_list.insert(&Note::new("", Vec::new()));
 
         assert_eq!(note_list.length(), 1);
     }
@@ -134,8 +136,8 @@ mod tests {
 
     #[test]
     fn test_notelist_length() {
-        let note1 = Note::new("", "");
-        let note2 = Note::new("", "");
+        let note1 = Note::new("", Vec::new());
+        let note2 = Note::new("", Vec::new());
 
         let mut note_list = NoteList::new();
         note_list.insert(&note1);
@@ -144,35 +146,34 @@ mod tests {
         assert_eq!(note_list.length(), 2);
     }
 
-    #[test]
-    fn test_load_notelist_from_json() {
-        let test_file = "test.json";
-        let mut nl = NoteList::new();
-        nl.insert(&Note::new("title1", "content1"));
-        nl.insert(&Note::new("title2", "content2"));
-        let file = File::create(test_file).unwrap();
-        let _ = serde_json::to_writer_pretty(file, &nl);
-
-        let result = NoteList::load(test_file);
-        assert!(result.is_ok());
-
-        let note_list = result.unwrap();
-        assert_eq!(note_list.length(), 2);
-    }
 
     #[test]
     fn test_write_notelist_to_json() {
         let mut note_list = NoteList::new();
-        note_list.insert(&Note::new("title1", "content1"));
-        note_list.insert(&Note::new("title2", "content2"));
+        note_list.insert(&Note::new("title1", vec!["content1".to_string()]));
+        note_list.insert(&Note::new("title2", vec!["content2".to_string()]));
 
         let file_path = "test.json";
         let result = note_list.save(file_path);
         assert!(result.is_ok());
+        assert!(fs::metadata(file_path).is_ok());
+    }
 
-        let parsed_result = NoteList::load(file_path);
-        assert!(parsed_result.is_ok());
-        let parsed_nl = parsed_result.unwrap();
-        assert_eq!(note_list, parsed_nl);
+    #[test]
+    fn test_load_notelist_from_json() {
+        let test_file = "test.json";
+        let mut nl = NoteList::new();
+        nl.insert(&Note::new("title1", vec!["content1".into()]));
+        nl.insert(&Note::new("title2", vec!["content2".into()]));
+
+        let _ = nl.save(test_file);
+
+        let result = NoteList::load(test_file);
+        // assert!(result.is_ok());
+
+        assert_eq!(nl, result.unwrap());
+        fs::remove_file(test_file).unwrap();
+        // let note_list = result.unwrap();
+        // assert_eq!(note_list.length(), 2);
     }
 }
