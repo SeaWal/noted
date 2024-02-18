@@ -1,6 +1,9 @@
 use crossterm::event::KeyCode;
 use ratatui::{
-    layout::Rect, style::{ Color, Style}, text::{Line, Span}, widgets::{Block, Borders, Paragraph, Widget, Wrap}
+    layout::Rect,
+    style::{Color, Style},
+    text::{Line, Span},
+    widgets::{Block, Borders, Paragraph, Widget, Wrap},
 };
 
 #[derive(Clone, Debug)]
@@ -47,7 +50,11 @@ impl TextBox {
 
     fn move_cursor_right(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-        let row_len = self.text[row].chars().count() - 1;
+        let row_len = if self.text[row].is_empty() {
+            0
+        } else {
+            self.text[row].chars().count() - 1
+        };
 
         if col == row_len && row < self.text.len() - 1 {
             self.cursor.col = 0;
@@ -61,7 +68,11 @@ impl TextBox {
         let (row, col) = (self.cursor.row, self.cursor.col);
 
         if col == 0 && row > 0 {
-            let prev_row_len = self.text[row - 1].chars().count() - 1;
+            let prev_row_len = if self.text[row - 1].is_empty() {
+                0
+            } else {
+                self.text[row - 1].chars().count() - 1
+            };
             self.cursor.row = row - 1;
             self.cursor.col = prev_row_len;
         } else if col > 0 {
@@ -81,12 +92,12 @@ impl TextBox {
 
     fn move_cursor_up(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-        
+
         if row > 0 {
             self.cursor.row = row - 1;
             if col > self.text[row - 1].chars().count() {
                 self.cursor.col = self.text[row - 1].chars().count()
-            } 
+            }
         }
     }
 
@@ -165,9 +176,15 @@ fn cursor_line_into_spans(line: &str, cursor_pos: usize) -> Vec<Span> {
         spans.push(span);
     }
 
+    if cursor_pos >= line.len() {
+        spans.push(Span::styled(
+            " ".to_string(),
+            Style::default().bg(Color::Gray).fg(Color::Black),
+        ));
+    }
+
     spans
 }
-
 
 impl Widget for TextBox {
     fn render(self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
