@@ -1,8 +1,6 @@
 use crossterm::event::KeyCode;
 use ratatui::{
-    layout::Rect,
-    text::{Line, Span},
-    widgets::{Block, Borders, Paragraph, Widget, Wrap},
+    layout::Rect, style::{ Color, Style}, text::{Line, Span}, widgets::{Block, Borders, Paragraph, Widget, Wrap}
 };
 
 #[derive(Clone, Debug)]
@@ -49,7 +47,7 @@ impl TextBox {
 
     fn move_cursor_right(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
-        let row_len = self.text[row].chars().count();
+        let row_len = self.text[row].chars().count() - 1;
 
         if col == row_len && row < self.text.len() - 1 {
             self.cursor.col = 0;
@@ -63,9 +61,9 @@ impl TextBox {
         let (row, col) = (self.cursor.row, self.cursor.col);
 
         if col == 0 && row > 0 {
-            let prev_row_line = self.text[row - 1].chars().count();
+            let prev_row_len = self.text[row - 1].chars().count() - 1;
             self.cursor.row = row - 1;
-            self.cursor.col = prev_row_line;
+            self.cursor.col = prev_row_len;
         } else if col > 0 {
             self.cursor.col = col - 1;
         }
@@ -96,6 +94,7 @@ impl TextBox {
         let (row, col) = (self.cursor.row, self.cursor.col);
         let curr_line = &mut self.text[row];
         curr_line.insert(col, ch);
+        self.move_cursor_right()
     }
 
     fn insert_newline(&mut self) {
@@ -142,13 +141,48 @@ impl TextBox {
     }
 }
 
+fn line_into_spans(line: &str) -> Vec<Span> {
+    let mut spans = Vec::new();
+
+    for ch in line.chars() {
+        let span = Span::styled(ch.to_string(), Style::default());
+        spans.push(span);
+    }
+
+    spans
+}
+
+fn cursor_line_into_spans(line: &str, cursor_pos: usize) -> Vec<Span> {
+    let mut spans = Vec::new();
+
+    for (i, ch) in line.chars().enumerate() {
+        let style = if i == cursor_pos {
+            Style::default().bg(Color::Gray).fg(Color::Black)
+        } else {
+            Style::default()
+        };
+        let span = Span::styled(ch.to_string(), style);
+        spans.push(span);
+    }
+
+    spans
+}
+
+
 impl Widget for TextBox {
     fn render(self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
-        let mut lines: Vec<Span> = Vec::new();
-        for line in self.text.iter() {
-            lines.push(Span::from(line));
+        let mut lines: Vec<Line> = Vec::new();
+
+        for (i, line) in self.text.iter().enumerate() {
+            let mut spans: Vec<Span> = Vec::new();
+            if i == self.cursor.row {
+                spans = cursor_line_into_spans(line, self.cursor.col);
+            } else {
+                spans = line_into_spans(line);
+            }
+            lines.push(Line::from(spans));
         }
-        Paragraph::new(Line::from(lines))
+        Paragraph::new(lines)
             .block(Block::default().borders(Borders::ALL))
             .wrap(Wrap { trim: false })
             .render(area, buf);
