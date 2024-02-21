@@ -53,7 +53,7 @@ impl TextBox {
         let row_len = if self.text[row].is_empty() {
             0
         } else {
-            self.text[row].chars().count() - 1
+            self.text[row].chars().count()
         };
 
         if col == row_len && row < self.text.len() - 1 {
@@ -71,7 +71,7 @@ impl TextBox {
             let prev_row_len = if self.text[row - 1].is_empty() {
                 0
             } else {
-                self.text[row - 1].chars().count() - 1
+                self.text[row - 1].chars().count()
             };
             self.cursor.row = row - 1;
             self.cursor.col = prev_row_len;
@@ -105,6 +105,10 @@ impl TextBox {
         let (row, col) = (self.cursor.row, self.cursor.col);
         let curr_line = &mut self.text[row];
         curr_line.insert(col, ch);
+
+        if col == curr_line.char_indices().count() {
+            curr_line.insert(col + 1, ' ');
+        }
         self.move_cursor_right()
     }
 
@@ -178,8 +182,8 @@ fn cursor_line_into_spans(line: &str, cursor_pos: usize) -> Vec<Span> {
 
     if cursor_pos >= line.len() {
         spans.push(Span::styled(
-            " ".to_string(),
-            Style::default().bg(Color::Gray).fg(Color::Black),
+            "N".to_string(),
+            Style::default().bg(Color::Gray).fg(Color::Gray),
         ));
     }
 
