@@ -6,10 +6,13 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Widget, Wrap},
 };
 
+use std::cmp::min;
+
 #[derive(Clone, Debug)]
 pub struct Cursor {
     pub row: usize,
     pub col: usize,
+    pub latch_col: usize,
 }
 
 #[derive(Clone, Debug)]
@@ -22,7 +25,11 @@ impl From<Vec<String>> for TextBox {
     fn from(v: Vec<String>) -> Self {
         Self {
             text: v,
-            cursor: Cursor { row: 0, col: 0 },
+            cursor: Cursor {
+                row: 0,
+                col: 0,
+                latch_col: 0,
+            },
         }
     }
 }
@@ -31,7 +38,11 @@ impl TextBox {
     pub fn new() -> Self {
         TextBox {
             text: Vec::new(),
-            cursor: Cursor { row: 0, col: 0 },
+            cursor: Cursor {
+                row: 0,
+                col: 0,
+                latch_col: 0,
+            },
         }
     }
 
@@ -62,6 +73,8 @@ impl TextBox {
         } else if col < row_len {
             self.cursor.col = col + 1;
         }
+
+        self.cursor.latch_col = self.cursor.col
     }
 
     fn move_cursor_left(&mut self) {
@@ -78,15 +91,19 @@ impl TextBox {
         } else if col > 0 {
             self.cursor.col = col - 1;
         }
+
+        self.cursor.latch_col = self.cursor.col
     }
 
     fn move_cursor_down(&mut self) {
         let (row, col) = (self.cursor.row, self.cursor.col);
         if row < self.text.len() - 1 {
             self.cursor.row = row + 1;
-            if col > self.text[row + 1].chars().count() {
-                self.cursor.col = self.text[row + 1].chars().count()
+            let next_line_len = self.text[row + 1].chars().count();
+            if col > next_line_len {
+                self.cursor.col = next_line_len
             }
+            self.cursor.col = min(next_line_len, self.cursor.latch_col)
         }
     }
 
@@ -95,9 +112,11 @@ impl TextBox {
 
         if row > 0 {
             self.cursor.row = row - 1;
-            if col > self.text[row - 1].chars().count() {
-                self.cursor.col = self.text[row - 1].chars().count()
+            let prev_line_len = self.text[row - 1].chars().count();
+            if col > prev_line_len {
+                self.cursor.col = prev_line_len
             }
+            self.cursor.col = min(prev_line_len, self.cursor.latch_col)
         }
     }
 
@@ -195,7 +214,7 @@ impl Widget for TextBox {
         let mut lines: Vec<Line> = Vec::new();
 
         for (i, line) in self.text.iter().enumerate() {
-            let mut spans: Vec<Span> = Vec::new();
+            let spans: Vec<Span>;
             if i == self.cursor.row {
                 spans = cursor_line_into_spans(line, self.cursor.col);
             } else {
