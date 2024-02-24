@@ -1,4 +1,4 @@
-use crossterm::event::KeyCode;
+use crossterm::event::{KeyCode, KeyModifiers};
 use ratatui::{
     layout::Rect,
     style::{Color, Style},
@@ -46,9 +46,15 @@ impl TextBox {
         }
     }
 
-    pub fn handle_input(&mut self, key: KeyCode) {
+    pub fn handle_input(&mut self, key: KeyCode, modifiers: KeyModifiers) {
         match key {
-            KeyCode::Right => self.move_cursor_right(),
+            KeyCode::Right => {
+                if modifiers == KeyModifiers::CONTROL {
+                    self.move_cursor_next_word()
+                } else {
+                    self.move_cursor_right()
+                }
+            }
             KeyCode::Left => self.move_cursor_left(),
             KeyCode::Down => self.move_cursor_down(),
             KeyCode::Up => self.move_cursor_up(),

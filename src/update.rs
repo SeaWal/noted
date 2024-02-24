@@ -68,11 +68,11 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         _ => {}
                     }
                 } else {
-                    app.textbox.handle_input(key_event.code)
+                    app.textbox.handle_input(key_event.code, key_event.modifiers)
                 }
             }
             _ => {
-                app.textbox.handle_input(key_event.code);
+                app.textbox.handle_input(key_event.code, key_event.modifiers);
             }
         },
     }
