@@ -49,13 +49,19 @@ impl TextBox {
     pub fn handle_input(&mut self, key: KeyCode, modifiers: KeyModifiers) {
         match key {
             KeyCode::Right => {
-                if modifiers == KeyModifiers::CONTROL {
-                    self.move_cursor_next_word()
+                if modifiers == KeyModifiers::SHIFT {
+                    self.move_cursor_next_word();
                 } else {
                     self.move_cursor_right()
                 }
             }
-            KeyCode::Left => self.move_cursor_left(),
+            KeyCode::Left => {
+                if modifiers == KeyModifiers::SHIFT {
+                    self.move_cursor_prev_word()
+                } else {
+                    self.move_cursor_left()
+                }
+            }
             KeyCode::Down => self.move_cursor_down(),
             KeyCode::Up => self.move_cursor_up(),
             KeyCode::Enter => self.insert_newline(),
@@ -193,13 +199,36 @@ impl TextBox {
             None
         }
 
-        match next_word_start(line, col) {
+        match next_word_start(line, col + 1) {
             Some(col) => self.cursor.col = col,
             None if row < self.text.len() - 1 => {
                 self.cursor.row = row + 1;
                 self.cursor.col = 0;
             }
             None => self.cursor.col = line.len(),
+        }
+    }
+
+    fn move_cursor_prev_word(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let line = &self.text[row];
+
+        fn prev_word_end(line: &String, init_pos: usize) -> Option<usize> {
+            for (i, ch) in line.chars().rev().enumerate().skip(line.len() - init_pos) {
+                if ch.is_whitespace() {
+                    return Some(line.len() - i - 1);
+                }
+            }
+            None
+        }
+
+        match prev_word_end(line, col) {
+            Some(col) => self.cursor.col = col,
+            None if row > 0 => {
+                self.cursor.row = row - 1;
+                self.cursor.col = self.text[row - 1].len();
+            }
+            None => self.cursor.col = 0,
         }
     }
 }
