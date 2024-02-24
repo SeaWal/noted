@@ -173,6 +173,29 @@ impl TextBox {
 
         prev_line.push_str(&curr_line);
     }
+
+    fn move_cursor_next_word(&mut self) {
+        let (row, col) = (self.cursor.row, self.cursor.col);
+        let line = &self.text[row];
+
+        fn next_word_start(line: &String, init_pos: usize) -> Option<usize> {
+            for (i, ch) in line.chars().enumerate().skip(init_pos) {
+                if ch.is_whitespace() {
+                    return Some(i);
+                }
+            }
+            None
+        }
+
+        match next_word_start(line, col) {
+            Some(col) => self.cursor.col = col,
+            None if row < self.text.len() - 1 => {
+                self.cursor.row = row + 1;
+                self.cursor.col = 0;
+            }
+            None => self.cursor.col = line.len(),
+        }
+    }
 }
 
 fn line_into_spans(line: &str) -> Vec<Span> {
