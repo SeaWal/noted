@@ -48,25 +48,15 @@ impl TextBox {
 
     pub fn handle_input(&mut self, key: KeyCode, modifiers: KeyModifiers) {
         match key {
-            KeyCode::Right => {
-                if modifiers == KeyModifiers::SHIFT {
-                    self.move_cursor_next_word();
-                } else {
-                    self.move_cursor_right()
-                }
-            }
-            KeyCode::Left => {
-                if modifiers == KeyModifiers::SHIFT {
-                    self.move_cursor_prev_word()
-                } else {
-                    self.move_cursor_left()
-                }
-            }
+            KeyCode::Right => self.move_cursor_right(),
+            KeyCode::Left => self.move_cursor_left(),
             KeyCode::Down => self.move_cursor_down(),
             KeyCode::Up => self.move_cursor_up(),
             KeyCode::Enter => self.insert_newline(),
             KeyCode::Char(ch) => self.insert_char(ch),
             KeyCode::Backspace => self.delete_char(),
+            KeyCode::Tab => self.move_cursor_next_word(),
+            KeyCode::BackTab => self.move_cursor_prev_word(),
             _ => {}
         }
     }
