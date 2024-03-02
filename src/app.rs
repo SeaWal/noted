@@ -9,6 +9,7 @@ use anyhow::Result;
 pub enum CurrentView {
     Main,
     Editing,
+    TitleInput,
 }
 #[derive(Debug)]
 pub struct AppState {

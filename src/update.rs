@@ -75,5 +75,8 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 app.textbox.handle_input(key_event.code, key_event.modifiers);
             }
         },
+        CurrentView::TitleInput => {
+
+        },
     }
 }

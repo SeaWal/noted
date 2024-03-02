@@ -23,16 +23,20 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         CurrentView::Editing => {
             frame.render_widget(app.textbox.clone(), layout[0]);
         }
+        CurrentView::TitleInput => {}
     }
 
     let nav_hints = render_nav(app);
     frame.render_widget(nav_hints, layout[1]);
-
+    let debug_text = format!(
+        "({}, {}) | {}",
+        app.textbox.cursor.row, app.textbox.cursor.col, app.textbox.cursor.latch_col
+    );
     frame.render_widget(
         Paragraph::new("")
             .block(
                 Block::default()
-                    .title(app.textbox.cursor.row.to_string())
+                    .title(debug_text)
                     .title_alignment(Alignment::Center), // .borders(Borders::ALL)
                                                          // .border_type(BorderType::Rounded),
             )
@@ -84,7 +88,7 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
         match app.current_view {
             CurrentView::Main => Span::styled("(q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
+            CurrentView::Editing | CurrentView::TitleInput => Span::styled("(Esc) to quit", Style::default()),
         }
     };
 
