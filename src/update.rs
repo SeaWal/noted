@@ -76,7 +76,19 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
         },
         CurrentView::TitleInput => {
-
+            match key_event.code {
+                KeyCode::Char(ch) => {
+                    let note = app.notes.get(app.current_note).expect("Error selecting current note");
+                    note.title.push(ch);
+                }
+                KeyCode::Backspace => {
+                    let note = app.notes.get(app.current_note).expect("Error selecting current note");
+                    note.title.pop();
+                }
+                KeyCode::Enter => app.current_view = CurrentView::Editing,
+                KeyCode::Esc => app.current_view = CurrentView::Main,
+                _ => {}
+            }
         },
     }
 }
