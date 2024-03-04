@@ -21,8 +21,12 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                 KeyCode::Char('n') => {
                     let note = Note::new("", Vec::new());
                     app.notes.insert(&note);
+                    app.current_note = app.notes.length() - 1;
+                    app.current_view = CurrentView::TitleInput
+                }
 
-                    app.current_view = CurrentView::Editing
+                KeyCode::Char('d') => {
+                    app.notes.remove(app.current_note);
                 }
 
                 KeyCode::Enter => {
