@@ -5,6 +5,21 @@ use crate::{
     note::Note,
 };
 
+/*
+instead of CurrentView::TitleInput:
+    -- shift focus to the nav bar and enter title there:
+    -- add editing_title bool to app
+    -- in update, on CurrentView::Main, match on editing_title
+    -- if editing, key presses shift to nav bar
+    -- if not editing, handle key presses normally
+
+    ----------------------------------
+    | Enter title:                   |   
+    ----------------------------------                 
+
+
+*/
+
 pub fn update(app: &mut AppState, key_event: KeyEvent) {
     match app.current_view {
         CurrentView::Main => {
@@ -22,7 +37,6 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                     let note = Note::new("", Vec::new());
                     app.notes.insert(&note);
                     app.current_note = app.notes.length() - 1;
-                    app.current_view = CurrentView::TitleInput
                 }
 
                 KeyCode::Char('d') => {
@@ -77,21 +91,6 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
             }
             _ => {
                 app.textbox.handle_input(key_event.code, key_event.modifiers);
-            }
-        },
-        CurrentView::TitleInput => {
-            match key_event.code {
-                KeyCode::Char(ch) => {
-                    let note = app.notes.get(app.current_note).expect("Error selecting current note");
-                    note.title.push(ch);
-                }
-                KeyCode::Backspace => {
-                    let note = app.notes.get(app.current_note).expect("Error selecting current note");
-                    note.title.pop();
-                }
-                KeyCode::Enter => app.current_view = CurrentView::Editing,
-                KeyCode::Esc => app.current_view = CurrentView::Main,
-                _ => {}
             }
         },
     }

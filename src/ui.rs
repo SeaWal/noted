@@ -23,7 +23,6 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
         CurrentView::Editing => {
             frame.render_widget(app.textbox.clone(), layout[0]);
         }
-        CurrentView::TitleInput => {}
     }
 
     let nav_hints = render_nav(app);
@@ -88,7 +87,9 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
         match app.current_view {
             CurrentView::Main => Span::styled("(q/Esc) to quit", Style::default()),
 
-            CurrentView::Editing | CurrentView::TitleInput => Span::styled("(Esc) to quit", Style::default()),
+            CurrentView::Editing => {
+                Span::styled("(Esc) to quit", Style::default())
+            }
         }
     };
 
