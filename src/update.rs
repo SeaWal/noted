@@ -5,69 +5,73 @@ use crate::{
     note::Note,
 };
 
-/*
-instead of CurrentView::TitleInput:
-    -- shift focus to the nav bar and enter title there:
-    -- add editing_title bool to app
-    -- in update, on CurrentView::Main, match on editing_title
-    -- if editing, key presses shift to nav bar
-    -- if not editing, handle key presses normally
-
-    ----------------------------------
-    | Enter title:                   |   
-    ----------------------------------                 
-
-
-*/
-
 pub fn update(app: &mut AppState, key_event: KeyEvent) {
     match app.current_view {
         CurrentView::Main => {
-            match key_event.code {
-                // close the program
-                KeyCode::Esc | KeyCode::Char('q') => app.quit(),
+            if !app.editing_title {
+                match key_event.code {
+                    // close the program
+                    KeyCode::Esc | KeyCode::Char('q') => app.quit(),
 
-                KeyCode::Char('c') | KeyCode::Char('C') => {
-                    if key_event.modifiers == KeyModifiers::CONTROL {
-                        app.quit()
+                    KeyCode::Char('c') | KeyCode::Char('C') => {
+                        if key_event.modifiers == KeyModifiers::CONTROL {
+                            app.quit()
+                        }
                     }
-                }
-                // on home screen, create/open a note
-                KeyCode::Char('n') => {
-                    let note = Note::new("", Vec::new());
-                    app.notes.insert(&note);
-                    app.current_note = app.notes.length() - 1;
-                }
-
-                KeyCode::Char('d') => {
-                    app.notes.remove(app.current_note);
-                }
-
-                KeyCode::Enter => {
-                    app.textbox.text = match app.notes.get(app.current_note) {
-                        Some(note) => note.clone().content,
-                        None => Vec::new(),
-                    };
-                    app.current_view = CurrentView::Editing
-                }
-
-                // navigate up/down list of notes
-                KeyCode::Up => {
-                    if app.current_note == 0 {
-                        app.current_note = 0
-                    } else {
-                        app.current_note -= 1
+                    // on home screen, create/open a note
+                    KeyCode::Char('n') => {
+                        let note = Note::new("", Vec::new());
+                        app.notes.insert(&note);
+                        app.current_note = app.notes.length() - 1;
+                        app.editing_title = true
                     }
-                }
-                KeyCode::Down => {
-                    if app.current_note == app.notes.length() - 1 {
-                    } else {
-                        app.current_note += 1
-                    }
-                }
 
-                // default case
-                _ => {}
+                    KeyCode::Char('d') => {
+                        app.notes.remove(app.current_note);
+                    }
+
+                    KeyCode::Enter => {
+                        app.textbox.text = match app.notes.get(app.current_note) {
+                            Some(note) => note.clone().content,
+                            None => Vec::new(),
+                        };
+                        app.current_view = CurrentView::Editing
+                    }
+
+                    // navigate up/down list of notes
+                    KeyCode::Up => {
+                        if app.current_note == 0 {
+                            app.current_note = 0
+                        } else {
+                            app.current_note -= 1
+                        }
+                    }
+                    KeyCode::Down => {
+                        if app.current_note == app.notes.length() - 1 {
+                        } else {
+                            app.current_note += 1
+                        }
+                    }
+
+                    // default case
+                    _ => {}
+                }
+            }
+            // else, editing title -> switch focus to nav
+            else {
+                match key_event.code {
+                    KeyCode::Char(ch) => {
+                        app.title_buf.push(ch);
+                    }
+                    KeyCode::Backspace => {
+                        app.title_buf.pop();
+                    }
+                    KeyCode::Esc => {
+                        app.editing_title = false;
+                        app.title_buf.clear();
+                    }
+                    _ => {}
+                }
             }
         }
         CurrentView::Editing => match key_event.code {
@@ -86,11 +90,13 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         _ => {}
                     }
                 } else {
-                    app.textbox.handle_input(key_event.code, key_event.modifiers)
+                    app.textbox
+                        .handle_input(key_event.code, key_event.modifiers)
                 }
             }
             _ => {
-                app.textbox.handle_input(key_event.code, key_event.modifiers);
+                app.textbox
+                    .handle_input(key_event.code, key_event.modifiers);
             }
         },
     }

@@ -18,6 +18,8 @@ pub struct AppState {
     pub current_view: CurrentView,
     pub save_file: String,
     pub textbox: TextBox,
+    pub editing_title: bool,
+    pub title_buf: String,
 }
 
 impl AppState {
@@ -30,6 +32,8 @@ impl AppState {
             current_view: CurrentView::Main,
             save_file: String::from("./notes/test.json"),
             textbox: TextBox::new(),
+            editing_title: false,
+            title_buf: String::new(),
         }
     }
 

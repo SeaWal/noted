@@ -85,11 +85,17 @@ fn render_notes(note_list: &mut NoteList) -> Table<'_> {
 fn render_nav(app: &mut AppState) -> Paragraph<'_> {
     let nav_hints = {
         match app.current_view {
-            CurrentView::Main => Span::styled("(q/Esc) to quit", Style::default()),
-
-            CurrentView::Editing => {
-                Span::styled("(Esc) to quit", Style::default())
+            CurrentView::Main => {
+                let msg: String;
+                if app.editing_title {
+                    msg = format!("Enter title: {}", app.title_buf.to_string());
+                } else {
+                    msg = "(q/Esc) to quit".to_string();
+                }
+                Span::styled(msg, Style::default())
             }
+
+            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
         }
     };
 
