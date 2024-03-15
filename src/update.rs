@@ -70,6 +70,12 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         app.editing_title = false;
                         app.title_buf.clear();
                     }
+                    KeyCode::Enter => {
+                        let note = app.notes.get(app.current_note).expect("Couldn't open note.");
+                        note.set_title(&app.title_buf);
+                        app.editing_title = false;
+                        app.current_view = CurrentView::Editing;
+                    }
                     _ => {}
                 }
             }
