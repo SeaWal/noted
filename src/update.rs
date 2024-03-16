@@ -75,6 +75,10 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
                         note.set_title(&app.title_buf);
                         app.editing_title = false;
                         app.current_view = CurrentView::Editing;
+                        app.textbox.text = match app.notes.get(app.current_note) {
+                            Some(note) => note.clone().content,
+                            None => Vec::new(),
+                        };
                     }
                     _ => {}
                 }

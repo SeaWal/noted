@@ -46,7 +46,7 @@ impl TextBox {
         }
     }
 
-    pub fn handle_input(&mut self, key: KeyCode, modifiers: KeyModifiers) {
+    pub fn handle_input(&mut self, key: KeyCode, _modifiers: KeyModifiers) {
         match key {
             KeyCode::Right => self.move_cursor_right(),
             KeyCode::Left => self.move_cursor_left(),
@@ -124,6 +124,10 @@ impl TextBox {
 
     fn insert_char(&mut self, ch: char) {
         let (row, col) = (self.cursor.row, self.cursor.col);
+        if self.text.is_empty() {
+            self.text.push(String::new());
+        }
+        
         let curr_line = &mut self.text[row];
         curr_line.insert(col, ch);
 
