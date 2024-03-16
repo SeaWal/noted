@@ -28,6 +28,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
 
                     KeyCode::Char('d') => {
                         app.notes.remove(app.current_note);
+                        app.save().expect("Couldn't save notes");
                     }
 
                     KeyCode::Enter => {
