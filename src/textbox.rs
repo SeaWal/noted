@@ -19,10 +19,13 @@ pub struct Cursor {
 pub struct TextBox {
     pub text: Vec<String>,
     pub cursor: Cursor,
+    pub visible_lines: (usize, usize),
+    pub terminal_height: usize,
 }
 
 impl From<Vec<String>> for TextBox {
     fn from(v: Vec<String>) -> Self {
+        let term_height = crossterm::terminal::size().map(|(_, height)| height as usize).unwrap_or_default();
         Self {
             text: v,
             cursor: Cursor {
@@ -30,12 +33,14 @@ impl From<Vec<String>> for TextBox {
                 col: 0,
                 latch_col: 0,
             },
+            visible_lines: (0, term_height),
+            terminal_height: term_height,
         }
     }
 }
 
 impl TextBox {
-    pub fn new() -> Self {
+    pub fn new(terminal_height: usize) -> Self {
         TextBox {
             text: Vec::new(),
             cursor: Cursor {
@@ -43,6 +48,8 @@ impl TextBox {
                 col: 0,
                 latch_col: 0,
             },
+            visible_lines: (0, terminal_height),
+            terminal_height: terminal_height,
         }
     }
 
@@ -127,7 +134,7 @@ impl TextBox {
         if self.text.is_empty() {
             self.text.push(String::new());
         }
-        
+
         let curr_line = &mut self.text[row];
         curr_line.insert(col, ch);
 

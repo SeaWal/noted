@@ -8,6 +8,7 @@ pub mod update;
 
 use anyhow::Result;
 use app::AppState;
+use crossterm::terminal;
 use event::{EventHandler, EventType};
 
 use note::NoteList;
@@ -17,15 +18,18 @@ use tui::Tui;
 use update::update;
 
 fn main() -> Result<()> {
-    let mut app = AppState::new();
-    app.notes = NoteList::load("./notes/test.json").unwrap_or(NoteList::new());
-
     let backend = CrosstermBackend::new(std::io::stderr());
     let terminal = Terminal::new(backend)?;
     let event_handler = EventHandler::new(250);
     let mut tui = Tui::new(terminal, event_handler);
-    tui.enter()?;
 
+    let height = terminal::size()
+        .map(|(_, height)| height)
+        .expect("Couldn't open terminal") as usize;
+    
+    let mut app = AppState::new(height);
+    app.notes = NoteList::load("./notes/test.json").unwrap_or(NoteList::new());
+    tui.enter()?;
 
     while !app.should_quit {
         tui.draw(&mut app)?;

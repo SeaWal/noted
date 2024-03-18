@@ -20,20 +20,22 @@ pub struct AppState {
     pub textbox: TextBox,
     pub editing_title: bool,
     pub title_buf: String,
+    pub terminal_height: usize,
 }
 
 impl AppState {
     // construct new AppState
-    pub fn new() -> Self {
+    pub fn new(terminal_height: usize) -> Self {
         AppState {
             should_quit: false,
             notes: NoteList::new(),
             current_note: 0,
             current_view: CurrentView::Main,
             save_file: String::from("./notes/test.json"),
-            textbox: TextBox::new(),
+            textbox: TextBox::new(terminal_height),
             editing_title: false,
             title_buf: String::new(),
+            terminal_height: terminal_height,
         }
     }
 
