@@ -8,6 +8,8 @@ use ratatui::{
 
 use std::cmp::min;
 
+const HEIGHT_PADDING: usize = 3;
+
 #[derive(Clone, Debug)]
 pub struct Cursor {
     pub row: usize,
@@ -25,7 +27,9 @@ pub struct TextBox {
 
 impl From<Vec<String>> for TextBox {
     fn from(v: Vec<String>) -> Self {
-        let term_height = crossterm::terminal::size().map(|(_, height)| height as usize).unwrap_or_default();
+        let term_height = crossterm::terminal::size()
+            .map(|(_, height)| height as usize)
+            .unwrap_or_default() - HEIGHT_PADDING;
         Self {
             text: v,
             cursor: Cursor {
@@ -48,8 +52,8 @@ impl TextBox {
                 col: 0,
                 latch_col: 0,
             },
-            visible_lines: (0, terminal_height),
-            terminal_height: terminal_height,
+            visible_lines: (0, terminal_height -HEIGHT_PADDING),
+            terminal_height: terminal_height -HEIGHT_PADDING,
         }
     }
 
@@ -66,6 +70,7 @@ impl TextBox {
             KeyCode::BackTab => self.move_cursor_prev_word(),
             _ => {}
         }
+        self.update_visibles_lines();
     }
 
     fn move_cursor_right(&mut self) {
@@ -232,6 +237,18 @@ impl TextBox {
             None => self.cursor.col = 0,
         }
     }
+
+    fn update_visibles_lines(&mut self) {
+        let row = self.cursor.row;
+        let start = if row >= self.terminal_height {
+            row - self.terminal_height + 1
+        } else {
+            0
+        };
+        let end = min(self.text.len(), start + self.terminal_height - 1);
+
+        self.visible_lines = (start, end);
+    }
 }
 
 fn line_into_spans(line: &str) -> Vec<Span> {
@@ -269,10 +286,13 @@ fn cursor_line_into_spans(line: &str, cursor_pos: usize) -> Vec<Span> {
 }
 
 impl Widget for TextBox {
-    fn render(self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
+    fn render(mut self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
+        self.update_visibles_lines();
+        let (start, end) = self.visible_lines;
+        let visible_text = &self.text[start..end];
         let mut lines: Vec<Line> = Vec::new();
 
-        for (i, line) in self.text.iter().enumerate() {
+        for (i, line) in visible_text.iter().enumerate() {
             let spans: Vec<Span>;
             if i == self.cursor.row {
                 spans = cursor_line_into_spans(line, self.cursor.col);
