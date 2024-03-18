@@ -88,6 +88,7 @@ pub fn update(app: &mut AppState, key_event: KeyEvent) {
         CurrentView::Editing => match key_event.code {
             KeyCode::Esc => {
                 let _ = app.save();
+                app.textbox.reset();
                 app.current_view = CurrentView::Main
             }
             KeyCode::Char(value) => {
