@@ -249,6 +249,12 @@ impl TextBox {
 
         self.visible_lines = (start, end);
     }
+
+    pub fn reset(&mut self) {
+        self.text.clear();
+        self.cursor.row = 0;
+        self.cursor.col = 0;
+    }
 }
 
 fn line_into_spans(line: &str) -> Vec<Span> {
