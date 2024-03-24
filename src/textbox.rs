@@ -29,7 +29,7 @@ impl From<Vec<String>> for TextBox {
     fn from(v: Vec<String>) -> Self {
         let term_height = crossterm::terminal::size()
             .map(|(_, height)| height as usize)
-            .unwrap_or_default() - HEIGHT_PADDING;
+            .unwrap_or_default(); // - HEIGHT_PADDING;
         Self {
             text: v,
             cursor: Cursor {
@@ -52,8 +52,8 @@ impl TextBox {
                 col: 0,
                 latch_col: 0,
             },
-            visible_lines: (0, terminal_height -HEIGHT_PADDING),
-            terminal_height: terminal_height -HEIGHT_PADDING,
+            visible_lines: (0, terminal_height),// -HEIGHT_PADDING),
+            terminal_height: terminal_height,// -HEIGHT_PADDING,
         }
     }
 
@@ -70,7 +70,7 @@ impl TextBox {
             KeyCode::BackTab => self.move_cursor_prev_word(),
             _ => {}
         }
-        self.update_visibles_lines();
+        self.update_visible_lines();
     }
 
     fn move_cursor_right(&mut self) {
@@ -238,14 +238,15 @@ impl TextBox {
         }
     }
 
-    fn update_visibles_lines(&mut self) {
+    fn update_visible_lines(&mut self) {
         let row = self.cursor.row;
-        let start = if row >= self.terminal_height {
-            row - self.terminal_height + 1
+        let available_height = self.terminal_height - HEIGHT_PADDING - 1;
+        let start = if row >= available_height {
+            row.saturating_sub(available_height) + 1
         } else {
             0
         };
-        let end = min(self.text.len(), start + self.terminal_height - 1);
+        let end = min(self.text.len(), start + available_height);
 
         self.visible_lines = (start, end);
     }
@@ -293,7 +294,7 @@ fn cursor_line_into_spans(line: &str, cursor_pos: usize) -> Vec<Span> {
 
 impl Widget for TextBox {
     fn render(mut self, area: Rect, buf: &mut ratatui::prelude::Buffer) {
-        self.update_visibles_lines();
+        self.update_visible_lines();
         let (start, end) = self.visible_lines;
         let visible_text = &self.text[start..end];
         let mut lines: Vec<Line> = Vec::new();
