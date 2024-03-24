@@ -1,5 +1,11 @@
 # Noted
-## Note-taking TUI in Rust!
-A Rust TUI app for writing quick notes to yourself.
+A minimalist note-taking app implemented in Rust using Crossterm and Ratatui
+libraries.
 
-Built using Ratatui for the TUI.  
+## Features
+- Easily create/delete notes
+- Navigate using arrow keys
+- Edit notes with custom-built text editor
+- Cross-platform
+
+ 
