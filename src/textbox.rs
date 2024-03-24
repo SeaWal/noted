@@ -301,7 +301,7 @@ impl Widget for TextBox {
 
         for (i, line) in visible_text.iter().enumerate() {
             let spans: Vec<Span>;
-            if i == self.cursor.row {
+            if i+start == self.cursor.row {
                 spans = cursor_line_into_spans(line, self.cursor.col);
             } else {
                 spans = line_into_spans(line);
