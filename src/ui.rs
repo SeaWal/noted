@@ -27,18 +27,9 @@ pub fn render(app: &mut AppState, frame: &mut Frame) {
 
     let nav_hints = render_nav(app);
     frame.render_widget(nav_hints, layout[1]);
-    let debug_text = format!(
-        "({}, {}) | {}",
-        app.textbox.cursor.row, app.textbox.cursor.col, app.textbox.cursor.latch_col
-    );
     frame.render_widget(
         Paragraph::new("")
-            .block(
-                Block::default()
-                    .title(debug_text)
-                    .title_alignment(Alignment::Center), // .borders(Borders::ALL)
-                                                         // .border_type(BorderType::Rounded),
-            )
+            .block(Block::default())
             .style(Style::default())
             .alignment(Alignment::Center),
         frame.size(),
@@ -92,10 +83,10 @@ fn render_nav(app: &mut AppState) -> Paragraph<'_> {
                 } else {
                     msg = "(q/Esc) to quit".to_string();
                 }
-                Span::styled(msg, Style::default())
+                Span::styled(msg, Style::default().bold())
             }
 
-            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default()),
+            CurrentView::Editing => Span::styled("(Esc) to quit", Style::default().bold()),
         }
     };
 
